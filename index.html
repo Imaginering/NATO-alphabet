@@ -3,259 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>NATO Trainer</title>
 
-<style>
-body {
-  margin: 0;
-  font-family: -apple-system, sans-serif;
-  background: linear-gradient(180deg, #1e3a8a, #0f172a);
-  color: white;
-  text-align: center;
-}
-
-.container { padding: 20px; }
-
-.card {
-  background: rgba(255,255,255,0.1);
-  padding: 20px;
-  border-radius: 16px;
-  margin-top: 20px;
-}
-
-/* 🔥 NIEUW INPUT DESIGN */
-input {
-  width: 100%;
-  padding: 16px;
-  border-radius: 14px;
-  border: none;
-  font-size: 16px;
-  margin-top: 10px;
-  background: rgba(255,255,255,0.9);
-  color: #0f172a;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  outline: none;
-}
-
-input:focus {
-  box-shadow: 0 0 0 3px rgba(34,197,94,0.6);
-}
-
-/* BUTTON */
-button {
-  width: 100%;
-  margin: 10px 0;
-  padding: 14px;
-  border-radius: 12px;
-  border: none;
-  font-size: 16px;
-  background: #334155;
-  color: white;
-}
-
-.correct { background: #22c55e; }
-.wrong { background: #ef4444; }
-
-.hidden { display: none; }
-
-/* ALFABET 1 KOLOM */
-.alphabet {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.alphabet div, .alphabet button {
-  background: rgba(255,255,255,0.1);
-  padding: 14px;
-  border-radius: 10px;
-  text-align: left;
-}
-</style>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="css/style.css">
 </head>
 
-<body>
+<body class="bg-gradient-to-b from-blue-800 to-slate-900 text-white text-center p-6">
 
-<div class="container">
+<h1 class="text-3xl font-bold mb-6">NATO Trainer</h1>
 
-<h1>NATO Trainer</h1>
-
-<div id="home" class="card">
-  <h2>Hoe werkt dit?</h2>
-  <p>
-  1. Begin met leren<br>
-  2. Oefen letters<br>
-  3. Gebruik alfabet als spiekbrief<br>
-  4. Test jezelf daarna
+<div class="bg-white/10 p-6 rounded-xl">
+  <h2 class="text-xl mb-4">Hoe werkt dit?</h2>
+  <p class="mb-4">
+    1. Leer het alfabet<br>
+    2. Oefen actief<br>
+    3. Gebruik overzicht<br>
+    4. Test jezelf
   </p>
 
-  <button onclick="showLearn()">📘 Leren</button>
-  <button onclick="showQuiz()">🎯 Toets</button>
-  <button onclick="showList()">📋 Alfabet</button>
+  <a href="learn.html" class="btn">📘 Leren</a>
+  <a href="quiz.html" class="btn">🎯 Toets</a>
+  <a href="list.html" class="btn">📋 Alfabet</a>
 </div>
-
-<div id="learn" class="card hidden"></div>
-<div id="quiz" class="card hidden"></div>
-<div id="list" class="card hidden"></div>
-
-</div>
-
-<script>
-const nato = {
-A:"alfa",B:"bravo",C:"charlie",D:"delta",E:"echo",F:"foxtrot",
-G:"golf",H:"hotel",I:"india",J:"juliett",K:"kilo",L:"lima",
-M:"mike",N:"november",O:"oscar",P:"papa",Q:"quebec",R:"romeo",
-S:"sierra",T:"tango",U:"uniform",V:"victor",W:"whiskey",
-X:"x-ray",Y:"yankee",Z:"zulu"
-};
-
-let letters = Object.keys(nato);
-let currentAnswer = "";
-let waiting = false;
-
-function hideAll(){
-  ["home","learn","quiz","list"].forEach(id =>
-    document.getElementById(id).classList.add("hidden")
-  );
-}
-
-function goHome(){
-  hideAll();
-  document.getElementById("home").classList.remove("hidden");
-}
-
-// LEARN
-function showLearn(){
-  hideAll();
-  const el = document.getElementById("learn");
-  el.classList.remove("hidden");
-
-  el.innerHTML = `<h2>Klik op een letter</h2>
-  <div class="alphabet">
-  ${letters.map(l => `<button onclick="checkLearn('${l}')">${l}</button>`).join("")}
-  </div>
-  <button onclick="goHome()">⬅️ Terug</button>`;
-}
-
-function checkLearn(letter){
-  let answer = prompt("Wat is deze letter?");
-  if(!answer) return;
-
-  alert(
-    answer.toLowerCase() === nato[letter]
-    ? "✅ Goed!"
-    : "❌ " + nato[letter]
-  );
-}
-
-// LIST
-function showList(){
-  hideAll();
-  const el = document.getElementById("list");
-  el.classList.remove("hidden");
-
-  el.innerHTML = `
-    <h2>Alfabet</h2>
-    <div class="alphabet">
-    ${letters.map(l => `<div>${l} = ${nato[l]}</div>`).join("")}
-    </div>
-    <button onclick="goHome()">⬅️ Terug</button>
-  `;
-}
-
-// QUIZ
-function showQuiz(){
-  hideAll();
-  document.getElementById("quiz").classList.remove("hidden");
-  newQuestion();
-}
-
-function randomLetter(){
-  return letters[Math.floor(Math.random()*letters.length)];
-}
-
-function randomNumber(len){
-  return Math.floor(Math.random()*Math.pow(10,len-1) + Math.pow(10,len-1));
-}
-
-function newQuestion(){
-  waiting = false;
-  const type = Math.floor(Math.random()*4);
-  const box = document.getElementById("quiz");
-
-  if(type < 3){
-    const letter = randomLetter();
-    const word = nato[letter];
-
-    if(type === 0){
-      currentAnswer = word;
-      box.innerHTML = `
-        <h2>Wat is ${letter}?</h2>
-        <input id="input">
-        <button onclick="checkInput()">Check</button>
-      `;
-    }
-
-    else {
-      currentAnswer = letter.toLowerCase();
-      box.innerHTML = `
-        <h2>Welke letter hoort bij "${word}"?</h2>
-        <input id="input">
-        <button onclick="checkInput()">Check</button>
-      `;
-    }
-  }
-
-  else {
-    const formatType = Math.floor(Math.random()*7);
-    let parts = [];
-
-    if(formatType === 0) parts = [randomNumber(2), randomLetter()+randomLetter(), randomLetter()+randomLetter()];
-    if(formatType === 1) parts = [randomLetter()+randomLetter(), randomNumber(3), randomLetter()];
-    if(formatType === 2) parts = [randomLetter(), randomNumber(3), randomLetter()+randomLetter()];
-    if(formatType === 3) parts = [randomLetter()+randomLetter()+randomLetter(), randomNumber(2), randomLetter()];
-    if(formatType === 4) parts = [randomNumber(1), randomLetter()+randomLetter()+randomLetter(), randomNumber(2)];
-    if(formatType === 5) parts = [randomNumber(2), randomLetter()+randomLetter()+randomLetter(), randomNumber(1)];
-    if(formatType === 6) parts = [randomNumber(1), randomLetter()+randomLetter()+randomLetter(), randomNumber(3)];
-
-    let plate = parts.join("-");
-
-    currentAnswer = parts.map(p =>
-      isNaN(p)
-      ? p.split("").map(l => nato[l]).join(" ")
-      : p
-    ).join(" ").toLowerCase();
-
-    box.innerHTML = `
-      <h2>Kenteken</h2>
-      <h1>${plate}</h1>
-      <input id="input" placeholder="Typ NATO">
-      <button onclick="checkInput()">Check</button>
-    `;
-  }
-}
-
-function checkInput(){
-  if(waiting) return;
-  waiting = true;
-
-  let val = document.getElementById("input").value.toLowerCase();
-
-  showResult(val === currentAnswer);
-}
-
-function showResult(correct){
-  const box = document.getElementById("quiz");
-
-  box.innerHTML += `
-    <h3>${correct ? "✅ Goed!" : "❌ Fout!"}</h3>
-    <p>${currentAnswer}</p>
-    <button onclick="newQuestion()">➡️ Volgende</button>
-    <button onclick="goHome()">🏠 Menu</button>
-  `;
-}
-</script>
 
 </body>
 </html>
