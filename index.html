@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NATO Trainer</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: -apple-system, sans-serif;
+  background: linear-gradient(180deg, #1e3a8a, #0f172a);
+  color: white;
+  text-align: center;
+}
+
+.container {
+  padding: 20px;
+}
+
+h1 {
+  margin-top: 10px;
+}
+
+.card {
+  background: rgba(255,255,255,0.1);
+  padding: 20px;
+  border-radius: 16px;
+  margin-top: 20px;
+  backdrop-filter: blur(10px);
+}
+
+button {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-size: 16px;
+  background: #334155;
+  color: white;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+.correct {
+  background: #22c55e !important;
+}
+
+.wrong {
+  background: #ef4444 !important;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-size: 16px;
+}
+
+.progress {
+  height: 10px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: #22c55e;
+}
+
+.stats {
+  margin-top: 10px;
+  font-size: 14px;
+  opacity: 0.8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>NATO Trainer</h1>
+
+  <div class="progress">
+    <div class="progress-bar" id="progress"></div>
+  </div>
+
+  <div class="stats">
+    Score: <span id="score">0</span> | Streak: <span id="streak">0</span>
+  </div>
+
+  <div class="card" id="questionBox"></div>
+</div>
+
+<script>
+const nato = {
+A:"alfa",B:"bravo",C:"charlie",D:"delta",E:"echo",F:"foxtrot",
+G:"golf",H:"hotel",I:"india",J:"juliett",K:"kilo",L:"lima",
+M:"mike",N:"november",O:"oscar",P:"papa",Q:"quebec",R:"romeo",
+S:"sierra",T:"tango",U:"uniform",V:"victor",W:"whiskey",
+X:"x-ray",Y:"yankee",Z:"zulu"
+};
+
+let letters = Object.keys(nato);
+let score = 0;
+let streak = 0;
+let total = 0;
+let currentAnswer = "";
+
+function randomLetter() {
+  return letters[Math.floor(Math.random()*letters.length)];
+}
+
+function shuffle(arr) {
+  return arr.sort(() => Math.random() - 0.5);
+}
+
+function newQuestion() {
+  total++;
+  updateProgress();
+
+  const type = Math.floor(Math.random()*4);
+  const letter = randomLetter();
+  const word = nato[letter];
+  const box = document.getElementById("questionBox");
+
+  if(type === 0){
+    let options = shuffle([word, nato[randomLetter()], nato[randomLetter()]]);
+    currentAnswer = word;
+
+    box.innerHTML = `<h2>Wat is ${letter}?</h2>` +
+      options.map(o => `<button onclick="check('${o}', this)">${o}</button>`).join("");
+  }
+
+  else if(type === 1){
+    currentAnswer = word;
+    box.innerHTML = `
+      <h2>Wat is ${letter}?</h2>
+      <input id="input" placeholder="Typ antwoord"/>
+      <button onclick="checkInput()">Check</button>
+    `;
+  }
+
+  else if(type === 2){
+    currentAnswer = letter.toLowerCase();
+    box.innerHTML = `
+      <h2>Welke letter hoort bij "${word}"?</h2>
+      <input id="input" placeholder="Typ letter"/>
+      <button onclick="checkInput()">Check</button>
+    `;
+  }
+
+  else {
+    let l1 = randomLetter();
+    let l2 = randomLetter();
+    let num = Math.floor(Math.random()*90+10);
+
+    currentAnswer = `${nato[l1]} ${nato[l2]} ${num}`.toLowerCase();
+
+    box.innerHTML = `
+      <h2>Kenteken:</h2>
+      <h1>${l1}${l2}-${num}</h1>
+      <input id="input" placeholder="Bijv: alfa bravo 12"/>
+      <button onclick="checkInput()">Check</button>
+    `;
+  }
+}
+
+function check(answer, btn){
+  let correct = answer.toLowerCase() === currentAnswer;
+
+  if(correct){
+    btn.classList.add("correct");
+    success();
+  } else {
+    btn.classList.add("wrong");
+    fail();
+  }
+
+  setTimeout(newQuestion, 600);
+}
+
+function checkInput(){
+  let val = document.getElementById("input").value.toLowerCase();
+
+  if(val === currentAnswer){
+    success();
+  } else {
+    fail();
+  }
+
+  setTimeout(newQuestion, 600);
+}
+
+function success(){
+  score++;
+  streak++;
+  updateStats();
+}
+
+function fail(){
+  streak = 0;
+  updateStats();
+}
+
+function updateStats(){
+  document.getElementById("score").innerText = score;
+  document.getElementById("streak").innerText = streak;
+}
+
+function updateProgress(){
+  let percent = Math.min((total/50)*100, 100);
+  document.getElementById("progress").style.width = percent + "%";
+}
+
+newQuestion();
+</script>
+
+</body>
+</html>
