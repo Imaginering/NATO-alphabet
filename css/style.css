@@ -1,0 +1,19 @@
+body.page {
+  @apply bg-gradient-to-b from-blue-800 to-slate-900 text-white text-center p-6;
+}
+
+.title {
+  @apply text-2xl font-bold mb-4;
+}
+
+.card {
+  @apply bg-white/10 p-6 rounded-xl;
+}
+
+.btn {
+  @apply block bg-slate-700 p-4 rounded-xl mt-2;
+}
+
+input {
+  @apply w-full p-4 rounded-xl text-black mt-2;
+}
