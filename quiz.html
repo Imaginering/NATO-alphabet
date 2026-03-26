@@ -12,28 +12,39 @@
 
 <div class="max-w-md mx-auto">
 
-<!-- HEADER -->
-<div class="mb-4">
-  <h1 class="text-2xl font-bold">Toets</h1>
+<h1 class="text-2xl font-bold mb-4">Toets</h1>
 
-  <div class="text-sm opacity-80 mt-2">
-    Goed: <span id="good">0</span> |
-    Fout: <span id="wrong">0</span><br>
-    Sessies: <span id="sessions">0</span> |
-    Foutloos: <span id="perfect">0</span>
+<!-- PROGRESS -->
+<div class="mb-3">
+  <div class="w-full bg-white/20 rounded-full h-3 overflow-hidden">
+    <div id="progressBar" class="h-3 bg-green-400 w-0 transition-all duration-300"></div>
   </div>
 </div>
 
-<!-- CARD -->
+<!-- SESSION INFO -->
+<div class="bg-white/10 p-3 rounded-xl mb-3 text-sm">
+  Vraag <span id="progress">1</span> / 25<br>
+  Goed: <span id="sessionGood">0</span> |
+  Fout: <span id="sessionWrong">0</span> |
+  🔥 Streak: <span id="streak">0</span>
+</div>
+
+<!-- TOTAL -->
+<div class="text-xs opacity-70 mb-3">
+  Totaal goed: <span id="good">0</span> |
+  Totaal fout: <span id="wrong">0</span><br>
+  Toetsen: <span id="sessions">0</span> |
+  Foutloos: <span id="perfect">0</span>
+</div>
+
+<!-- QUIZ -->
 <div id="quiz" class="bg-white/10 backdrop-blur p-6 rounded-2xl space-y-4"></div>
 
-<!-- NAV -->
 <a href="index.html" class="block bg-white/10 text-center p-4 rounded-xl mt-4">
   ⬅️ Terug
 </a>
 
-<button onclick="resetStats()" 
-  class="w-full mt-2 bg-red-500/80 p-3 rounded-xl">
+<button onclick="resetStats()" class="w-full mt-2 bg-red-500/80 p-3 rounded-xl">
   Reset statistieken
 </button>
 
