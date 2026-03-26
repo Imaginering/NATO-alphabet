@@ -1,3 +1,5 @@
+document.addEventListener("DOMContentLoaded", () => {
+
 const nato = {
 A:"alfa",B:"bravo",C:"charlie",D:"delta",E:"echo",F:"foxtrot",
 G:"golf",H:"hotel",I:"india",J:"juliett",K:"kilo",L:"lima",
@@ -8,36 +10,66 @@ X:"x-ray",Y:"yankee",Z:"zulu"
 
 const letters = Object.keys(nato);
 
-/* =========================
-   STORAGE
-========================= */
+/* ================= STORAGE ================= */
 function getStat(key){
   return parseInt(localStorage.getItem(key)) || 0;
 }
-
 function setStat(key,val){
   localStorage.setItem(key,val);
 }
-
-function resetStats(){
+window.resetStats = function(){
   localStorage.clear();
   location.reload();
 }
 
-/* =========================
-   RANDOM
-========================= */
+/* ================= RANDOM ================= */
 function randomLetter(){
   return letters[Math.floor(Math.random()*letters.length)];
 }
-
 function randomNumber(len){
   return Math.floor(Math.random()*Math.pow(10,len-1) + Math.pow(10,len-1));
 }
 
-/* =========================
-   QUIZ VARS
-========================= */
+/* ================= LEARN ================= */
+if(document.getElementById("learn")){
+  const el = document.getElementById("learn");
+
+  el.innerHTML = letters.map(l => `
+    <button onclick="learnCheck('${l}')"
+      class="w-full bg-white/10 p-4 rounded-xl text-left active:scale-95 transition">
+      <span class="font-bold text-lg">${l}</span>
+    </button>
+  `).join("");
+}
+
+window.learnCheck = function(letter){
+  const answer = prompt(`Wat is ${letter}?`);
+  if(!answer) return;
+
+  const correct = answer.toLowerCase().trim() === nato[letter];
+
+  alert(
+    correct
+      ? "✅ Goed!"
+      : `❌ Fout! Antwoord: ${nato[letter]}`
+  );
+}
+
+/* ================= LIST ================= */
+if(document.getElementById("list")){
+  const el = document.getElementById("list");
+
+  el.innerHTML = letters.map(l => `
+    <div class="bg-white/10 p-4 rounded-xl flex justify-between">
+      <span class="font-bold">${l}</span>
+      <span class="opacity-80">${nato[l]}</span>
+    </div>
+  `).join("");
+}
+
+/* ================= QUIZ ================= */
+if(document.getElementById("quiz")){
+
 let currentAnswer = "";
 let questionIndex = 0;
 let totalQuestions = 25;
@@ -50,17 +82,9 @@ let streak = 0;
 let plateCount = 0;
 const maxPlates = 10;
 
-/* =========================
-   INIT QUIZ
-========================= */
-if(document.getElementById("quiz")){
-  setStat("sessions", getStat("sessions")+1);
-  startSession();
-}
+setStat("sessions", getStat("sessions")+1);
+startSession();
 
-/* =========================
-   SESSION
-========================= */
 function startSession(){
   questionIndex = 0;
   sessionGood = 0;
@@ -71,29 +95,21 @@ function startSession(){
   nextQuestion();
 }
 
-/* =========================
-   UI UPDATE
-========================= */
 function updateUI(){
-  if(document.getElementById("progress")){
-    document.getElementById("progress").innerText = questionIndex;
-    document.getElementById("sessionGood").innerText = sessionGood;
-    document.getElementById("sessionWrong").innerText = sessionWrong;
-    document.getElementById("streak").innerText = streak;
+  document.getElementById("progress").innerText = questionIndex;
+  document.getElementById("sessionGood").innerText = sessionGood;
+  document.getElementById("sessionWrong").innerText = sessionWrong;
+  document.getElementById("streak").innerText = streak;
 
-    document.getElementById("good").innerText = getStat("good");
-    document.getElementById("wrong").innerText = getStat("wrong");
-    document.getElementById("sessions").innerText = getStat("sessions");
-    document.getElementById("perfect").innerText = getStat("perfect");
+  document.getElementById("good").innerText = getStat("good");
+  document.getElementById("wrong").innerText = getStat("wrong");
+  document.getElementById("sessions").innerText = getStat("sessions");
+  document.getElementById("perfect").innerText = getStat("perfect");
 
-    let percent = (questionIndex / totalQuestions) * 100;
-    document.getElementById("progressBar").style.width = percent + "%";
-  }
+  let percent = (questionIndex / totalQuestions) * 100;
+  document.getElementById("progressBar").style.width = percent + "%";
 }
 
-/* =========================
-   QUESTIONS
-========================= */
 function nextQuestion(){
 
   if(questionIndex >= totalQuestions){
@@ -105,13 +121,9 @@ function nextQuestion(){
 
   const box = document.getElementById("quiz");
 
-  let type;
-
-  if(plateCount >= maxPlates){
-    type = 0;
-  } else {
-    type = Math.random() < 0.5 ? 0 : 1;
-  }
+  let type = (plateCount >= maxPlates)
+    ? 0
+    : (Math.random() < 0.5 ? 0 : 1);
 
   if(type === 0){
     let letter = randomLetter();
@@ -121,11 +133,11 @@ function nextQuestion(){
       <h2 class="text-lg opacity-80">Wat is ${letter}?</h2>
 
       <input id="input"
-        class="w-full p-4 rounded-xl text-black text-lg focus:outline-none"
+        class="w-full p-4 rounded-xl text-black text-lg"
         placeholder="Typ antwoord">
 
       <button onclick="check()"
-        class="w-full bg-green-500 p-4 rounded-xl text-lg font-semibold active:scale-95 transition">
+        class="w-full bg-green-500 p-4 rounded-xl font-semibold">
         Check
       </button>
     `;
@@ -150,15 +162,13 @@ function nextQuestion(){
 
     box.innerHTML = `
       <h2 class="text-lg opacity-80">Kenteken</h2>
-
-      <h1 class="text-3xl font-bold tracking-widest">${plate}</h1>
+      <h1 class="text-3xl font-bold">${plate}</h1>
 
       <input id="input"
-        class="w-full p-4 rounded-xl text-black text-lg"
-        placeholder="Bijv: alfa bravo 12">
+        class="w-full p-4 rounded-xl text-black text-lg">
 
       <button onclick="check()"
-        class="w-full bg-green-500 p-4 rounded-xl text-lg font-semibold active:scale-95 transition">
+        class="w-full bg-green-500 p-4 rounded-xl font-semibold">
         Check
       </button>
     `;
@@ -167,10 +177,7 @@ function nextQuestion(){
   updateUI();
 }
 
-/* =========================
-   CHECK
-========================= */
-function check(){
+window.check = function(){
   const val = document.getElementById("input").value.toLowerCase().trim();
   const box = document.getElementById("quiz");
 
@@ -190,23 +197,18 @@ function check(){
   updateUI();
 
   box.innerHTML += `
-    <div class="p-4 rounded-xl text-lg font-semibold mt-2
-      ${correct ? "bg-green-500 animate-pulse" : "bg-red-500 animate-pulse"}">
-
+    <div class="p-4 rounded-xl mt-2 ${correct ? "bg-green-500" : "bg-red-500"}">
       ${correct ? "Goed!" : "Fout!"}<br>
-      <span class="text-sm opacity-80">${currentAnswer}</span>
+      ${currentAnswer}
     </div>
 
     <button onclick="nextQuestion()"
-      class="w-full bg-slate-700 p-4 rounded-xl mt-2 active:scale-95 transition">
+      class="w-full bg-slate-700 p-4 rounded-xl mt-2">
       Volgende
     </button>
   `;
 }
 
-/* =========================
-   END SESSION
-========================= */
 function endSession(){
 
   if(mistakes === 0){
@@ -216,61 +218,17 @@ function endSession(){
   const box = document.getElementById("quiz");
 
   box.innerHTML = `
-    <div class="bg-white/10 p-6 rounded-2xl text-center space-y-4">
-
+    <div class="bg-white/10 p-6 rounded-2xl text-center">
       <h2 class="text-2xl font-bold">Klaar!</h2>
-
-      <p>
-        Score: ${sessionGood} / ${totalQuestions}<br>
-        Fouten: ${mistakes}
-      </p>
-
+      <p>Score: ${sessionGood}/25</p>
       <button onclick="startSession()"
-        class="w-full bg-green-500 p-4 rounded-xl">
+        class="w-full bg-green-500 p-4 rounded-xl mt-4">
         Nieuwe toets
       </button>
-
     </div>
   `;
-
-  updateUI();
 }
 
-/* =========================
-   LEARN
-========================= */
-if(document.getElementById("learn")){
-  document.getElementById("learn").innerHTML =
-    letters.map(l => `
-      <button onclick="learnCheck('${l}')"
-        class="w-full bg-white/10 p-4 rounded-xl text-left active:scale-95 transition">
-        <span class="font-bold text-lg">${l}</span>
-      </button>
-    `).join("");
 }
 
-function learnCheck(letter){
-  const answer = prompt(`Wat is ${letter}?`);
-  if(!answer) return;
-
-  const correct = answer.toLowerCase().trim() === nato[letter];
-
-  alert(
-    correct
-      ? "✅ Goed!"
-      : `❌ Fout! Antwoord: ${nato[letter]}`
-  );
-}
-
-/* =========================
-   LIST
-========================= */
-if(document.getElementById("list")){
-  document.getElementById("list").innerHTML =
-    letters.map(l => `
-      <div class="bg-white/10 p-4 rounded-xl flex justify-between">
-        <span class="font-bold">${l}</span>
-        <span class="opacity-80">${nato[l]}</span>
-      </div>
-    `).join("");
-}
+});
