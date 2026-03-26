@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>NATO Trainer</title>
 
 <style>
@@ -23,9 +24,28 @@ body {
   margin-top: 20px;
 }
 
+/* 🔥 NIEUW INPUT DESIGN */
+input {
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  border: none;
+  font-size: 16px;
+  margin-top: 10px;
+  background: rgba(255,255,255,0.9);
+  color: #0f172a;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  outline: none;
+}
+
+input:focus {
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.6);
+}
+
+/* BUTTON */
 button {
   width: 100%;
-  margin: 8px 0;
+  margin: 10px 0;
   padding: 14px;
   border-radius: 12px;
   border: none;
@@ -37,15 +57,9 @@ button {
 .correct { background: #22c55e; }
 .wrong { background: #ef4444; }
 
-input {
-  width: 100%;
-  padding: 14px;
-  border-radius: 12px;
-  border: none;
-}
-
 .hidden { display: none; }
 
+/* ALFABET 1 KOLOM */
 .alphabet {
   display: flex;
   flex-direction: column;
@@ -57,7 +71,6 @@ input {
   padding: 14px;
   border-radius: 10px;
   text-align: left;
-  font-size: 16px;
 }
 </style>
 </head>
@@ -71,11 +84,10 @@ input {
 <div id="home" class="card">
   <h2>Hoe werkt dit?</h2>
   <p>
-  1. Begin met <b>Leren</b><br>
-  2. Klik op letters en test jezelf<br>
-  3. Gebruik <b>Alfabet</b> als overzicht<br>
-  4. Ga daarna naar <b>Toets</b><br><br>
-  Je krijgt verschillende soorten vragen om het echt te beheersen.
+  1. Begin met leren<br>
+  2. Oefen letters<br>
+  3. Gebruik alfabet als spiekbrief<br>
+  4. Test jezelf daarna
   </p>
 
   <button onclick="showLearn()">📘 Leren</button>
@@ -102,12 +114,10 @@ let letters = Object.keys(nato);
 let currentAnswer = "";
 let waiting = false;
 
-// NAVIGATIE
 function hideAll(){
-  document.getElementById("home").classList.add("hidden");
-  document.getElementById("learn").classList.add("hidden");
-  document.getElementById("quiz").classList.add("hidden");
-  document.getElementById("list").classList.add("hidden");
+  ["home","learn","quiz","list"].forEach(id =>
+    document.getElementById(id).classList.add("hidden")
+  );
 }
 
 function goHome(){
@@ -115,7 +125,7 @@ function goHome(){
   document.getElementById("home").classList.remove("hidden");
 }
 
-// LEER MODUS
+// LEARN
 function showLearn(){
   hideAll();
   const el = document.getElementById("learn");
@@ -132,14 +142,14 @@ function checkLearn(letter){
   let answer = prompt("Wat is deze letter?");
   if(!answer) return;
 
-  if(answer.toLowerCase() === nato[letter]){
-    alert("✅ Goed!");
-  } else {
-    alert("❌ Fout! Het is: " + nato[letter]);
-  }
+  alert(
+    answer.toLowerCase() === nato[letter]
+    ? "✅ Goed!"
+    : "❌ " + nato[letter]
+  );
 }
 
-// LIJST
+// LIST
 function showList(){
   hideAll();
   const el = document.getElementById("list");
@@ -165,99 +175,64 @@ function randomLetter(){
   return letters[Math.floor(Math.random()*letters.length)];
 }
 
+function randomNumber(len){
+  return Math.floor(Math.random()*Math.pow(10,len-1) + Math.pow(10,len-1));
+}
+
 function newQuestion(){
   waiting = false;
   const type = Math.floor(Math.random()*4);
-  const letter = randomLetter();
-  const word = nato[letter];
   const box = document.getElementById("quiz");
 
-  if(type === 0){
-    let options = [word, nato[randomLetter()], nato[randomLetter()]]
-      .sort(()=>Math.random()-0.5);
+  if(type < 3){
+    const letter = randomLetter();
+    const word = nato[letter];
 
-    currentAnswer = word;
-
-    box.innerHTML = `<h2>Wat is ${letter}?</h2>` +
-      options.map(o => `<button onclick="check('${o}', this)">${o}</button>`).join("");
-  }
-
-  else if(type === 1){
-    currentAnswer = word;
-    box.innerHTML = `
-      <h2>Wat is ${letter}?</h2>
-      <input id="input">
-      <button onclick="checkInput()">Check</button>
-    `;
-  }
-
-  else if(type === 2){
-    currentAnswer = letter.toLowerCase();
-    box.innerHTML = `
-      <h2>Welke letter hoort bij "${word}"?</h2>
-      <input id="input">
-      <button onclick="checkInput()">Check</button>
-    `;
-  }
-
-  else {
-    const formatType = Math.floor(Math.random()*3);
-    let plate = "";
-    let answerParts = [];
-
-    if(formatType === 0){
-      let l1 = randomLetter();
-      let l2 = randomLetter();
-      let l3 = randomLetter();
-      let l4 = randomLetter();
-      let num = Math.floor(Math.random()*90+10);
-
-      plate = `${l1}${l2}-${num}-${l3}${l4}`;
-      answerParts = [nato[l1], nato[l2], num, nato[l3], nato[l4]];
-    }
-
-    else if(formatType === 1){
-      let l1 = randomLetter();
-      let l2 = randomLetter();
-      let num1 = Math.floor(Math.random()*90+10);
-      let num2 = Math.floor(Math.random()*90+10);
-
-      plate = `${num1}-${l1}${l2}-${num2}`;
-      answerParts = [num1, nato[l1], nato[l2], num2];
+    if(type === 0){
+      currentAnswer = word;
+      box.innerHTML = `
+        <h2>Wat is ${letter}?</h2>
+        <input id="input">
+        <button onclick="checkInput()">Check</button>
+      `;
     }
 
     else {
-      let l1 = randomLetter();
-      let l2 = randomLetter();
-      let l3 = randomLetter();
-      let num1 = Math.floor(Math.random()*9+1);
-      let num2 = Math.floor(Math.random()*900+100);
-
-      plate = `${num1}-${l1}${l2}${l3}-${num2}`;
-      answerParts = [num1, nato[l1], nato[l2], nato[l3], num2];
+      currentAnswer = letter.toLowerCase();
+      box.innerHTML = `
+        <h2>Welke letter hoort bij "${word}"?</h2>
+        <input id="input">
+        <button onclick="checkInput()">Check</button>
+      `;
     }
+  }
 
-    currentAnswer = answerParts.join(" ").toLowerCase();
+  else {
+    const formatType = Math.floor(Math.random()*7);
+    let parts = [];
+
+    if(formatType === 0) parts = [randomNumber(2), randomLetter()+randomLetter(), randomLetter()+randomLetter()];
+    if(formatType === 1) parts = [randomLetter()+randomLetter(), randomNumber(3), randomLetter()];
+    if(formatType === 2) parts = [randomLetter(), randomNumber(3), randomLetter()+randomLetter()];
+    if(formatType === 3) parts = [randomLetter()+randomLetter()+randomLetter(), randomNumber(2), randomLetter()];
+    if(formatType === 4) parts = [randomNumber(1), randomLetter()+randomLetter()+randomLetter(), randomNumber(2)];
+    if(formatType === 5) parts = [randomNumber(2), randomLetter()+randomLetter()+randomLetter(), randomNumber(1)];
+    if(formatType === 6) parts = [randomNumber(1), randomLetter()+randomLetter()+randomLetter(), randomNumber(3)];
+
+    let plate = parts.join("-");
+
+    currentAnswer = parts.map(p =>
+      isNaN(p)
+      ? p.split("").map(l => nato[l]).join(" ")
+      : p
+    ).join(" ").toLowerCase();
 
     box.innerHTML = `
       <h2>Kenteken</h2>
       <h1>${plate}</h1>
-      <input id="input" placeholder="Bijv: alfa bravo 12 charlie delta">
+      <input id="input" placeholder="Typ NATO">
       <button onclick="checkInput()">Check</button>
     `;
-  }
-}
-
-function check(answer, btn){
-  if(waiting) return;
-  waiting = true;
-
-  if(answer.toLowerCase() === currentAnswer){
-    btn.classList.add("correct");
-    showResult(true);
-  } else {
-    btn.classList.add("wrong");
-    showResult(false);
   }
 }
 
@@ -267,11 +242,7 @@ function checkInput(){
 
   let val = document.getElementById("input").value.toLowerCase();
 
-  if(val === currentAnswer){
-    showResult(true);
-  } else {
-    showResult(false);
-  }
+  showResult(val === currentAnswer);
 }
 
 function showResult(correct){
@@ -279,7 +250,7 @@ function showResult(correct){
 
   box.innerHTML += `
     <h3>${correct ? "✅ Goed!" : "❌ Fout!"}</h3>
-    <p>Antwoord: ${currentAnswer}</p>
+    <p>${currentAnswer}</p>
     <button onclick="newQuestion()">➡️ Volgende</button>
     <button onclick="goHome()">🏠 Menu</button>
   `;
