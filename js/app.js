@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+/* ================= DATA ================= */
 
 const nato = {
 A:"alfa",B:"bravo",C:"charlie",D:"delta",E:"echo",F:"foxtrot",
@@ -10,7 +10,8 @@ X:"x-ray",Y:"yankee",Z:"zulu"
 
 const letters = Object.keys(nato);
 
-/* STORAGE */
+/* ================= STORAGE ================= */
+
 function getStat(key){
   return parseInt(localStorage.getItem(key)) || 0;
 }
@@ -19,12 +20,13 @@ function setStat(key,val){
   localStorage.setItem(key,val);
 }
 
-window.resetStats = function(){
+function resetStats(){
   localStorage.clear();
   location.reload();
-};
+}
 
-/* RANDOM */
+/* ================= RANDOM ================= */
+
 function randomLetter(){
   return letters[Math.floor(Math.random()*letters.length)];
 }
@@ -33,48 +35,88 @@ function randomNumber(len){
   return Math.floor(Math.random()*Math.pow(10,len-1) + Math.pow(10,len-1));
 }
 
-/* ================= QUIZ ================= */
+/* ================= LEARN ================= */
 
-if(document.getElementById("quiz")){
+function initLearn(){
+  const el = document.getElementById("learn");
+  if(!el) return;
+
+  el.innerHTML = letters.map(l => `
+    <button onclick="learnCheck('${l}')"
+      class="w-full bg-white/10 p-4 rounded-xl text-left active:scale-95">
+      <span class="font-bold text-lg">${l}</span>
+    </button>
+  `).join("");
+}
+
+function learnCheck(letter){
+  const answer = prompt(`Wat is ${letter}?`);
+  if(!answer) return;
+
+  const correct = answer.toLowerCase().trim() === nato[letter];
+
+  alert(
+    correct
+      ? "Goed!"
+      : `Fout! Antwoord: ${nato[letter]}`
+  );
+}
+
+/* ================= LIST ================= */
+
+function initList(){
+  const el = document.getElementById("list");
+  if(!el) return;
+
+  el.innerHTML = letters.map(l => `
+    <div class="bg-white/10 p-4 rounded-xl flex justify-between">
+      <span class="font-bold">${l}</span>
+      <span>${nato[l]}</span>
+    </div>
+  `).join("");
+}
+
+/* ================= QUIZ ================= */
 
 let currentAnswer = "";
 let questionIndex = 0;
-const totalQuestions = 25;
-
 let sessionGood = 0;
 let sessionWrong = 0;
 let mistakes = 0;
 
 let plateCount = 0;
+const totalQuestions = 25;
 const maxPlates = 10;
 
-startSession();
+function initQuiz(){
+  if(!document.getElementById("quiz")) return;
+  startSession();
+}
 
-/* SESSION */
 function startSession(){
   questionIndex = 0;
   sessionGood = 0;
   sessionWrong = 0;
   mistakes = 0;
   plateCount = 0;
+
   nextQuestion();
 }
 
-/* UI */
 function updateUI(){
+  const progress = document.getElementById("progress");
+  if(!progress) return;
+
   document.getElementById("progress").innerText = questionIndex;
   document.getElementById("sessionGood").innerText = sessionGood;
   document.getElementById("sessionWrong").innerText = sessionWrong;
-
-  // 🔥 streak = aantal foutloze toetsen
   document.getElementById("streak").innerText = getStat("perfect");
 
   const percent = (questionIndex / totalQuestions) * 100;
   document.getElementById("progressBar").style.width = percent + "%";
 }
 
-/* QUESTIONS */
-window.nextQuestion = function(){
+function nextQuestion(){
 
   if(questionIndex >= totalQuestions){
     endSession();
@@ -94,14 +136,14 @@ window.nextQuestion = function(){
     currentAnswer = nato[letter];
 
     box.innerHTML = `
-      <h2 class="text-lg opacity-80">Wat is ${letter}?</h2>
+      <h2>Wat is ${letter}?</h2>
 
       <input id="input"
-        class="w-full p-4 rounded-xl text-black text-lg"
+        class="w-full p-4 rounded-xl text-black"
         placeholder="Typ antwoord">
 
       <button onclick="check()"
-        class="w-full bg-green-500 p-4 rounded-xl font-semibold active:scale-95 transition">
+        class="w-full bg-green-500 p-4 rounded-xl mt-2">
         Check
       </button>
     `;
@@ -125,26 +167,23 @@ window.nextQuestion = function(){
     ).join(" ").toLowerCase();
 
     box.innerHTML = `
-      <h2 class="text-lg opacity-80">Kenteken</h2>
-
-      <h1 class="text-3xl font-bold tracking-widest">${plate}</h1>
+      <h2>Kenteken</h2>
+      <h1>${plate}</h1>
 
       <input id="input"
-        class="w-full p-4 rounded-xl text-black text-lg"
-        placeholder="Bijv: alfa bravo 12">
+        class="w-full p-4 rounded-xl text-black">
 
       <button onclick="check()"
-        class="w-full bg-green-500 p-4 rounded-xl font-semibold active:scale-95 transition">
+        class="w-full bg-green-500 p-4 rounded-xl mt-2">
         Check
       </button>
     `;
   }
 
   updateUI();
-};
+}
 
-/* CHECK */
-window.check = function(){
+function check(){
   const val = document.getElementById("input").value.toLowerCase().trim();
   const box = document.getElementById("quiz");
 
@@ -160,27 +199,23 @@ window.check = function(){
   updateUI();
 
   box.innerHTML += `
-    <div class="p-4 rounded-xl mt-2 text-lg font-semibold
-      ${correct ? "bg-green-500" : "bg-red-500"}">
-
+    <div class="p-4 mt-2 ${correct ? "bg-green-500" : "bg-red-500"}">
       ${
         correct
           ? "Goed!"
-          : `Fout, het goede antwoord is <strong>${currentAnswer}</strong>`
+          : `Fout, het goede antwoord is ${currentAnswer}`
       }
     </div>
 
     <button onclick="nextQuestion()"
-      class="w-full bg-slate-700 p-4 rounded-xl mt-2 active:scale-95 transition">
+      class="w-full bg-slate-700 p-4 rounded-xl mt-2">
       Volgende
     </button>
   `;
-};
+}
 
-/* END */
 function endSession(){
 
-  // 🔥 alleen verhogen als foutloos
   if(mistakes === 0){
     setStat("perfect", getStat("perfect")+1);
   }
@@ -188,26 +223,20 @@ function endSession(){
   const box = document.getElementById("quiz");
 
   box.innerHTML = `
-    <div class="bg-white/10 p-6 rounded-2xl text-center space-y-4">
+    <h2>Klaar!</h2>
+    <p>${sessionGood} / ${totalQuestions}</p>
 
-      <h2 class="text-2xl font-bold">Klaar!</h2>
-
-      <p>
-        Score: ${sessionGood} / ${totalQuestions}<br>
-        Fouten: ${mistakes}
-      </p>
-
-      <button onclick="startSession()"
-        class="w-full bg-green-500 p-4 rounded-xl">
-        Nieuwe toets
-      </button>
-
-    </div>
+    <button onclick="startSession()"
+      class="w-full bg-green-500 p-4 rounded-xl mt-2">
+      Nieuwe toets
+    </button>
   `;
-
-  updateUI();
 }
 
-}
+/* ================= INIT ================= */
 
+document.addEventListener("DOMContentLoaded", () => {
+  initLearn();
+  initList();
+  initQuiz();
 });
