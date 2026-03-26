@@ -8,15 +8,34 @@
 <script src="js/app.js" defer></script>
 </head>
 
-<body class="bg-gradient-to-b from-blue-800 to-slate-900 text-white min-h-screen p-6">
+<body class="min-h-screen bg-gradient-to-b from-blue-700 to-slate-900 text-white p-4">
 
 <div class="max-w-md mx-auto">
 
-<h1 class="text-2xl font-bold mb-4">Toets</h1>
+<!-- HEADER -->
+<div class="mb-4">
+  <h1 class="text-2xl font-bold">Toets</h1>
 
-<div id="quiz" class="bg-white/10 p-6 rounded-2xl space-y-4"></div>
+  <div class="text-sm opacity-80 mt-2">
+    Goed: <span id="good">0</span> |
+    Fout: <span id="wrong">0</span><br>
+    Sessies: <span id="sessions">0</span> |
+    Foutloos: <span id="perfect">0</span>
+  </div>
+</div>
 
-<a href="index.html" class="block bg-slate-700 p-4 rounded-xl mt-4 text-center">⬅️ Terug</a>
+<!-- CARD -->
+<div id="quiz" class="bg-white/10 backdrop-blur p-6 rounded-2xl space-y-4"></div>
+
+<!-- NAV -->
+<a href="index.html" class="block bg-white/10 text-center p-4 rounded-xl mt-4">
+  ⬅️ Terug
+</a>
+
+<button onclick="resetStats()" 
+  class="w-full mt-2 bg-red-500/80 p-3 rounded-xl">
+  Reset statistieken
+</button>
 
 </div>
 </body>
