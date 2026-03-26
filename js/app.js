@@ -116,7 +116,7 @@ function updateUI(){
 }
 
 /* QUESTIONS */
-function nextQuestion(){
+window.nextQuestion = function(){
 
   if(questionIndex >= totalQuestions){
     endSession();
