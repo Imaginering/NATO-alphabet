@@ -47,15 +47,17 @@ input {
 .hidden { display: none; }
 
 .alphabet {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-.alphabet div {
+.alphabet div, .alphabet button {
   background: rgba(255,255,255,0.1);
-  padding: 10px;
-  border-radius: 8px;
+  padding: 14px;
+  border-radius: 10px;
+  text-align: left;
+  font-size: 16px;
 }
 </style>
 </head>
@@ -69,9 +71,10 @@ input {
 <div id="home" class="card">
   <h2>Hoe werkt dit?</h2>
   <p>
-  1. Leer eerst het alfabet<br>
-  2. Oefen door erop te klikken<br>
-  3. Start daarna de toets<br><br>
+  1. Begin met <b>Leren</b><br>
+  2. Klik op letters en test jezelf<br>
+  3. Gebruik <b>Alfabet</b> als overzicht<br>
+  4. Ga daarna naar <b>Toets</b><br><br>
   Je krijgt verschillende soorten vragen om het echt te beheersen.
   </p>
 
@@ -107,6 +110,12 @@ function hideAll(){
   document.getElementById("list").classList.add("hidden");
 }
 
+function goHome(){
+  hideAll();
+  document.getElementById("home").classList.remove("hidden");
+}
+
+// LEER MODUS
 function showLearn(){
   hideAll();
   const el = document.getElementById("learn");
@@ -124,12 +133,13 @@ function checkLearn(letter){
   if(!answer) return;
 
   if(answer.toLowerCase() === nato[letter]){
-    alert("Goed!");
+    alert("✅ Goed!");
   } else {
-    alert("Fout! Het is: " + nato[letter]);
+    alert("❌ Fout! Het is: " + nato[letter]);
   }
 }
 
+// LIJST
 function showList(){
   hideAll();
   const el = document.getElementById("list");
@@ -144,18 +154,13 @@ function showList(){
   `;
 }
 
+// QUIZ
 function showQuiz(){
   hideAll();
   document.getElementById("quiz").classList.remove("hidden");
   newQuestion();
 }
 
-function goHome(){
-  hideAll();
-  document.getElementById("home").classList.remove("hidden");
-}
-
-// QUIZ
 function randomLetter(){
   return letters[Math.floor(Math.random()*letters.length)];
 }
@@ -196,15 +201,48 @@ function newQuestion(){
   }
 
   else {
-    let l1 = randomLetter();
-    let l2 = randomLetter();
-    let num = Math.floor(Math.random()*90+10);
+    const formatType = Math.floor(Math.random()*3);
+    let plate = "";
+    let answerParts = [];
 
-    currentAnswer = `${nato[l1]} ${nato[l2]} ${num}`.toLowerCase();
+    if(formatType === 0){
+      let l1 = randomLetter();
+      let l2 = randomLetter();
+      let l3 = randomLetter();
+      let l4 = randomLetter();
+      let num = Math.floor(Math.random()*90+10);
+
+      plate = `${l1}${l2}-${num}-${l3}${l4}`;
+      answerParts = [nato[l1], nato[l2], num, nato[l3], nato[l4]];
+    }
+
+    else if(formatType === 1){
+      let l1 = randomLetter();
+      let l2 = randomLetter();
+      let num1 = Math.floor(Math.random()*90+10);
+      let num2 = Math.floor(Math.random()*90+10);
+
+      plate = `${num1}-${l1}${l2}-${num2}`;
+      answerParts = [num1, nato[l1], nato[l2], num2];
+    }
+
+    else {
+      let l1 = randomLetter();
+      let l2 = randomLetter();
+      let l3 = randomLetter();
+      let num1 = Math.floor(Math.random()*9+1);
+      let num2 = Math.floor(Math.random()*900+100);
+
+      plate = `${num1}-${l1}${l2}${l3}-${num2}`;
+      answerParts = [num1, nato[l1], nato[l2], nato[l3], num2];
+    }
+
+    currentAnswer = answerParts.join(" ").toLowerCase();
 
     box.innerHTML = `
-      <h2>${l1}${l2}-${num}</h2>
-      <input id="input" placeholder="Typ NATO">
+      <h2>Kenteken</h2>
+      <h1>${plate}</h1>
+      <input id="input" placeholder="Bijv: alfa bravo 12 charlie delta">
       <button onclick="checkInput()">Check</button>
     `;
   }
