@@ -11,10 +11,8 @@ const letters = Object.keys(nato);
 /* ================= INIT ================= */
 
 document.addEventListener("DOMContentLoaded", function(){
-
   initList();
   initQuiz();
-
 });
 
 /* ================= LIST ================= */
@@ -35,7 +33,7 @@ function initList(){
 
 let currentAnswer = "";
 let questionIndex = 0;
-let totalQuestions = 25;
+const totalQuestions = 25;
 
 let sessionGood = 0;
 let sessionWrong = 0;
@@ -43,11 +41,10 @@ let mistakes = 0;
 
 let usedLetters = [];
 let plateCount = 0;
-let maxPlates = 10;
+const maxPlates = 10;
 
 function initQuiz(){
   if(!document.getElementById("quiz")) return;
-
   startSession();
 }
 
@@ -75,13 +72,13 @@ function updateUI(){
   document.getElementById("progressBar").style.width = percent + "%";
 }
 
-/* ================= LETTER GARANTIE ================= */
+/* ================= SLIMME LETTER KEUZE ================= */
 
 function getNextLetter(){
-
   const remaining = letters.filter(l => !usedLetters.includes(l));
 
-  if(remaining.length > 0){
+  // hogere kans op ontbrekende letters
+  if(remaining.length > 0 && Math.random() < 0.7){
     return remaining[Math.floor(Math.random()*remaining.length)];
   }
 
@@ -107,22 +104,24 @@ window.nextQuestion = function(){
     type = 0;
   }
 
-  if(usedLetters.length < letters.length){
-    type = 0;
-  }
+  /* ================= LETTER VRAAG ================= */
 
-  /* LETTER VRAAG */
   if(type === 0){
 
     const letter = getNextLetter();
-    usedLetters.push(letter);
+
+    if(!usedLetters.includes(letter)){
+      usedLetters.push(letter);
+    }
 
     currentAnswer = nato[letter];
 
     box.innerHTML = `
       <h2 class="text-lg">Wat is ${letter}?</h2>
 
-      <input id="input" class="w-full p-4 rounded-xl text-black">
+      <input id="input"
+        class="w-full p-4 rounded-xl text-black"
+        placeholder="Typ antwoord">
 
       <button id="checkBtn" onclick="check()"
         class="w-full bg-green-500 p-4 rounded-xl mt-2">
@@ -131,16 +130,21 @@ window.nextQuestion = function(){
     `;
   }
 
-  /* KENTEKEN */
+  /* ================= KENTEKEN ================= */
+
   else {
 
     plateCount++;
 
-    const l1 = randomLetter();
-    const l2 = randomLetter();
-    const l3 = randomLetter();
+    const l1 = getNextLetter();
+    const l2 = getNextLetter();
+    const l3 = getNextLetter();
 
-    usedLetters.push(l1,l2,l3);
+    [l1,l2,l3].forEach(l => {
+      if(!usedLetters.includes(l)){
+        usedLetters.push(l);
+      }
+    });
 
     const num = randomNumber(2);
 
@@ -150,9 +154,11 @@ window.nextQuestion = function(){
 
     box.innerHTML = `
       <h2>Kenteken</h2>
-      <h1 class="text-2xl">${plate}</h1>
+      <h1 class="text-2xl font-bold tracking-widest">${plate}</h1>
 
-      <input id="input" class="w-full p-4 rounded-xl text-black">
+      <input id="input"
+        class="w-full p-4 rounded-xl text-black"
+        placeholder="Bijv: alfa bravo 12">
 
       <button id="checkBtn" onclick="check()"
         class="w-full bg-green-500 p-4 rounded-xl mt-2">
