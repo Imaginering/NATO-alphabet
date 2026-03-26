@@ -14,24 +14,16 @@ body {
   text-align: center;
 }
 
-.container {
-  padding: 20px;
-}
-
-h1 {
-  margin-top: 10px;
-}
+.container { padding: 20px; }
 
 .card {
   background: rgba(255,255,255,0.1);
   padding: 20px;
   border-radius: 16px;
   margin-top: 20px;
-  backdrop-filter: blur(10px);
 }
 
 button {
-  display: block;
   width: 100%;
   margin: 8px 0;
   padding: 14px;
@@ -42,44 +34,28 @@ button {
   color: white;
 }
 
-button:active {
-  transform: scale(0.97);
-}
-
-.correct {
-  background: #22c55e !important;
-}
-
-.wrong {
-  background: #ef4444 !important;
-}
+.correct { background: #22c55e; }
+.wrong { background: #ef4444; }
 
 input {
   width: 100%;
   padding: 14px;
   border-radius: 12px;
   border: none;
-  font-size: 16px;
 }
 
-.progress {
-  height: 10px;
-  background: rgba(255,255,255,0.2);
-  border-radius: 10px;
-  overflow: hidden;
-  margin-top: 10px;
+.hidden { display: none; }
+
+.alphabet {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
 }
 
-.progress-bar {
-  height: 100%;
-  width: 0%;
-  background: #22c55e;
-}
-
-.stats {
-  margin-top: 10px;
-  font-size: 14px;
-  opacity: 0.8;
+.alphabet div {
+  background: rgba(255,255,255,0.1);
+  padding: 10px;
+  border-radius: 8px;
 }
 </style>
 </head>
@@ -87,17 +63,27 @@ input {
 <body>
 
 <div class="container">
-  <h1>NATO Trainer</h1>
 
-  <div class="progress">
-    <div class="progress-bar" id="progress"></div>
-  </div>
+<h1>NATO Trainer</h1>
 
-  <div class="stats">
-    Score: <span id="score">0</span> | Streak: <span id="streak">0</span>
-  </div>
+<div id="home" class="card">
+  <h2>Hoe werkt dit?</h2>
+  <p>
+  1. Leer eerst het alfabet<br>
+  2. Oefen door erop te klikken<br>
+  3. Start daarna de toets<br><br>
+  Je krijgt verschillende soorten vragen om het echt te beheersen.
+  </p>
 
-  <div class="card" id="questionBox"></div>
+  <button onclick="showLearn()">📘 Leren</button>
+  <button onclick="showQuiz()">🎯 Toets</button>
+  <button onclick="showList()">📋 Alfabet</button>
+</div>
+
+<div id="learn" class="card hidden"></div>
+<div id="quiz" class="card hidden"></div>
+<div id="list" class="card hidden"></div>
+
 </div>
 
 <script>
@@ -110,30 +96,81 @@ X:"x-ray",Y:"yankee",Z:"zulu"
 };
 
 let letters = Object.keys(nato);
-let score = 0;
-let streak = 0;
-let total = 0;
 let currentAnswer = "";
+let waiting = false;
 
-function randomLetter() {
+// NAVIGATIE
+function hideAll(){
+  document.getElementById("home").classList.add("hidden");
+  document.getElementById("learn").classList.add("hidden");
+  document.getElementById("quiz").classList.add("hidden");
+  document.getElementById("list").classList.add("hidden");
+}
+
+function showLearn(){
+  hideAll();
+  const el = document.getElementById("learn");
+  el.classList.remove("hidden");
+
+  el.innerHTML = `<h2>Klik op een letter</h2>
+  <div class="alphabet">
+  ${letters.map(l => `<button onclick="checkLearn('${l}')">${l}</button>`).join("")}
+  </div>
+  <button onclick="goHome()">⬅️ Terug</button>`;
+}
+
+function checkLearn(letter){
+  let answer = prompt("Wat is deze letter?");
+  if(!answer) return;
+
+  if(answer.toLowerCase() === nato[letter]){
+    alert("Goed!");
+  } else {
+    alert("Fout! Het is: " + nato[letter]);
+  }
+}
+
+function showList(){
+  hideAll();
+  const el = document.getElementById("list");
+  el.classList.remove("hidden");
+
+  el.innerHTML = `
+    <h2>Alfabet</h2>
+    <div class="alphabet">
+    ${letters.map(l => `<div>${l} = ${nato[l]}</div>`).join("")}
+    </div>
+    <button onclick="goHome()">⬅️ Terug</button>
+  `;
+}
+
+function showQuiz(){
+  hideAll();
+  document.getElementById("quiz").classList.remove("hidden");
+  newQuestion();
+}
+
+function goHome(){
+  hideAll();
+  document.getElementById("home").classList.remove("hidden");
+}
+
+// QUIZ
+function randomLetter(){
   return letters[Math.floor(Math.random()*letters.length)];
 }
 
-function shuffle(arr) {
-  return arr.sort(() => Math.random() - 0.5);
-}
-
-function newQuestion() {
-  total++;
-  updateProgress();
-
+function newQuestion(){
+  waiting = false;
   const type = Math.floor(Math.random()*4);
   const letter = randomLetter();
   const word = nato[letter];
-  const box = document.getElementById("questionBox");
+  const box = document.getElementById("quiz");
 
   if(type === 0){
-    let options = shuffle([word, nato[randomLetter()], nato[randomLetter()]]);
+    let options = [word, nato[randomLetter()], nato[randomLetter()]]
+      .sort(()=>Math.random()-0.5);
+
     currentAnswer = word;
 
     box.innerHTML = `<h2>Wat is ${letter}?</h2>` +
@@ -144,7 +181,7 @@ function newQuestion() {
     currentAnswer = word;
     box.innerHTML = `
       <h2>Wat is ${letter}?</h2>
-      <input id="input" placeholder="Typ antwoord"/>
+      <input id="input">
       <button onclick="checkInput()">Check</button>
     `;
   }
@@ -153,7 +190,7 @@ function newQuestion() {
     currentAnswer = letter.toLowerCase();
     box.innerHTML = `
       <h2>Welke letter hoort bij "${word}"?</h2>
-      <input id="input" placeholder="Typ letter"/>
+      <input id="input">
       <button onclick="checkInput()">Check</button>
     `;
   }
@@ -166,62 +203,49 @@ function newQuestion() {
     currentAnswer = `${nato[l1]} ${nato[l2]} ${num}`.toLowerCase();
 
     box.innerHTML = `
-      <h2>Kenteken:</h2>
-      <h1>${l1}${l2}-${num}</h1>
-      <input id="input" placeholder="Bijv: alfa bravo 12"/>
+      <h2>${l1}${l2}-${num}</h2>
+      <input id="input" placeholder="Typ NATO">
       <button onclick="checkInput()">Check</button>
     `;
   }
 }
 
 function check(answer, btn){
-  let correct = answer.toLowerCase() === currentAnswer;
+  if(waiting) return;
+  waiting = true;
 
-  if(correct){
+  if(answer.toLowerCase() === currentAnswer){
     btn.classList.add("correct");
-    success();
+    showResult(true);
   } else {
     btn.classList.add("wrong");
-    fail();
+    showResult(false);
   }
-
-  setTimeout(newQuestion, 600);
 }
 
 function checkInput(){
+  if(waiting) return;
+  waiting = true;
+
   let val = document.getElementById("input").value.toLowerCase();
 
   if(val === currentAnswer){
-    success();
+    showResult(true);
   } else {
-    fail();
+    showResult(false);
   }
-
-  setTimeout(newQuestion, 600);
 }
 
-function success(){
-  score++;
-  streak++;
-  updateStats();
-}
+function showResult(correct){
+  const box = document.getElementById("quiz");
 
-function fail(){
-  streak = 0;
-  updateStats();
+  box.innerHTML += `
+    <h3>${correct ? "✅ Goed!" : "❌ Fout!"}</h3>
+    <p>Antwoord: ${currentAnswer}</p>
+    <button onclick="newQuestion()">➡️ Volgende</button>
+    <button onclick="goHome()">🏠 Menu</button>
+  `;
 }
-
-function updateStats(){
-  document.getElementById("score").innerText = score;
-  document.getElementById("streak").innerText = streak;
-}
-
-function updateProgress(){
-  let percent = Math.min((total/50)*100, 100);
-  document.getElementById("progress").style.width = percent + "%";
-}
-
-newQuestion();
 </script>
 
 </body>
