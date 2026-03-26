@@ -14,18 +14,21 @@ const letters = Object.keys(nato);
 function getStat(key){
   return parseInt(localStorage.getItem(key)) || 0;
 }
+
 function setStat(key,val){
   localStorage.setItem(key,val);
 }
+
 window.resetStats = function(){
   localStorage.clear();
   location.reload();
-}
+};
 
 /* ================= RANDOM ================= */
 function randomLetter(){
   return letters[Math.floor(Math.random()*letters.length)];
 }
+
 function randomNumber(len){
   return Math.floor(Math.random()*Math.pow(10,len-1) + Math.pow(10,len-1));
 }
@@ -53,7 +56,7 @@ window.learnCheck = function(letter){
       ? "✅ Goed!"
       : `❌ Fout! Antwoord: ${nato[letter]}`
   );
-}
+};
 
 /* ================= LIST ================= */
 if(document.getElementById("list")){
@@ -72,7 +75,7 @@ if(document.getElementById("quiz")){
 
 let currentAnswer = "";
 let questionIndex = 0;
-let totalQuestions = 25;
+const totalQuestions = 25;
 
 let sessionGood = 0;
 let sessionWrong = 0;
@@ -85,6 +88,7 @@ const maxPlates = 10;
 setStat("sessions", getStat("sessions")+1);
 startSession();
 
+/* SESSION */
 function startSession(){
   questionIndex = 0;
   sessionGood = 0;
@@ -95,6 +99,7 @@ function startSession(){
   nextQuestion();
 }
 
+/* UI */
 function updateUI(){
   document.getElementById("progress").innerText = questionIndex;
   document.getElementById("sessionGood").innerText = sessionGood;
@@ -106,10 +111,11 @@ function updateUI(){
   document.getElementById("sessions").innerText = getStat("sessions");
   document.getElementById("perfect").innerText = getStat("perfect");
 
-  let percent = (questionIndex / totalQuestions) * 100;
+  const percent = (questionIndex / totalQuestions) * 100;
   document.getElementById("progressBar").style.width = percent + "%";
 }
 
+/* QUESTIONS */
 function nextQuestion(){
 
   if(questionIndex >= totalQuestions){
@@ -126,18 +132,18 @@ function nextQuestion(){
     : (Math.random() < 0.5 ? 0 : 1);
 
   if(type === 0){
-    let letter = randomLetter();
+    const letter = randomLetter();
     currentAnswer = nato[letter];
 
     box.innerHTML = `
       <h2 class="text-lg opacity-80">Wat is ${letter}?</h2>
 
       <input id="input"
-        class="w-full p-4 rounded-xl text-black text-lg"
+        class="w-full p-4 rounded-xl text-black text-lg focus:outline-none"
         placeholder="Typ antwoord">
 
       <button onclick="check()"
-        class="w-full bg-green-500 p-4 rounded-xl font-semibold">
+        class="w-full bg-green-500 p-4 rounded-xl text-lg font-semibold active:scale-95 transition">
         Check
       </button>
     `;
@@ -146,29 +152,31 @@ function nextQuestion(){
   else {
     plateCount++;
 
-    let parts = [
+    const parts = [
       randomLetter()+randomLetter(),
       randomNumber(2),
       randomLetter()+randomLetter()
     ];
 
-    let plate = parts.join("-");
+    const plate = parts.join("-");
 
     currentAnswer = parts.map(p =>
       isNaN(p)
-      ? p.split("").map(l => nato[l]).join(" ")
-      : p
+        ? p.split("").map(l => nato[l]).join(" ")
+        : p
     ).join(" ").toLowerCase();
 
     box.innerHTML = `
       <h2 class="text-lg opacity-80">Kenteken</h2>
-      <h1 class="text-3xl font-bold">${plate}</h1>
+
+      <h1 class="text-3xl font-bold tracking-widest">${plate}</h1>
 
       <input id="input"
-        class="w-full p-4 rounded-xl text-black text-lg">
+        class="w-full p-4 rounded-xl text-black text-lg"
+        placeholder="Bijv: alfa bravo 12">
 
       <button onclick="check()"
-        class="w-full bg-green-500 p-4 rounded-xl font-semibold">
+        class="w-full bg-green-500 p-4 rounded-xl text-lg font-semibold active:scale-95 transition">
         Check
       </button>
     `;
@@ -177,11 +185,12 @@ function nextQuestion(){
   updateUI();
 }
 
+/* CHECK */
 window.check = function(){
   const val = document.getElementById("input").value.toLowerCase().trim();
   const box = document.getElementById("quiz");
 
-  let correct = val === currentAnswer;
+  const correct = val === currentAnswer;
 
   if(correct){
     sessionGood++;
@@ -197,18 +206,24 @@ window.check = function(){
   updateUI();
 
   box.innerHTML += `
-    <div class="p-4 rounded-xl mt-2 ${correct ? "bg-green-500" : "bg-red-500"}">
-      ${correct ? "Goed!" : "Fout!"}<br>
-      ${currentAnswer}
+    <div class="p-4 rounded-xl mt-2 text-lg font-semibold
+      ${correct ? "bg-green-500" : "bg-red-500"}">
+
+      ${
+        correct
+          ? "Goed!"
+          : `Fout, het goede antwoord is <strong>${currentAnswer}</strong>`
+      }
     </div>
 
     <button onclick="nextQuestion()"
-      class="w-full bg-slate-700 p-4 rounded-xl mt-2">
+      class="w-full bg-slate-700 p-4 rounded-xl mt-2 active:scale-95 transition">
       Volgende
     </button>
   `;
-}
+};
 
+/* END SESSION */
 function endSession(){
 
   if(mistakes === 0){
@@ -218,15 +233,24 @@ function endSession(){
   const box = document.getElementById("quiz");
 
   box.innerHTML = `
-    <div class="bg-white/10 p-6 rounded-2xl text-center">
+    <div class="bg-white/10 p-6 rounded-2xl text-center space-y-4">
+
       <h2 class="text-2xl font-bold">Klaar!</h2>
-      <p>Score: ${sessionGood}/25</p>
+
+      <p>
+        Score: ${sessionGood} / ${totalQuestions}<br>
+        Fouten: ${mistakes}
+      </p>
+
       <button onclick="startSession()"
-        class="w-full bg-green-500 p-4 rounded-xl mt-4">
+        class="w-full bg-green-500 p-4 rounded-xl">
         Nieuwe toets
       </button>
+
     </div>
   `;
+
+  updateUI();
 }
 
 }
