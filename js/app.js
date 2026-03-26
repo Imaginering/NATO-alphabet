@@ -1,5 +1,3 @@
-document.addEventListener("DOMContentLoaded", () => {
-
 const nato = {
 A:"alfa",B:"bravo",C:"charlie",D:"delta",E:"echo",F:"foxtrot",
 G:"golf",H:"hotel",I:"india",J:"juliett",K:"kilo",L:"lima",
@@ -10,23 +8,22 @@ X:"x-ray",Y:"yankee",Z:"zulu"
 
 const letters = Object.keys(nato);
 
-/* STORAGE */
-function getStat(key){
-  return parseInt(localStorage.getItem(key)) || 0;
-}
-function setStat(key,val){
-  localStorage.setItem(key,val);
-}
+/* ================= INIT ================= */
 
-window.resetStats = function(){
-  localStorage.clear();
-  location.reload();
-};
+document.addEventListener("DOMContentLoaded", function(){
 
-/* LIST */
-const listEl = document.getElementById("list");
-if(listEl){
-  listEl.innerHTML = letters.map(l => `
+  initList();
+  initQuiz();
+
+});
+
+/* ================= LIST ================= */
+
+function initList(){
+  const el = document.getElementById("list");
+  if(!el) return;
+
+  el.innerHTML = letters.map(l => `
     <div class="bg-white/10 p-4 rounded-xl flex justify-between">
       <span class="font-bold">${l}</span>
       <span>${nato[l]}</span>
@@ -34,54 +31,64 @@ if(listEl){
   `).join("");
 }
 
-/* QUIZ */
-const quizEl = document.getElementById("quiz");
-if(!quizEl) return;
+/* ================= QUIZ ================= */
 
 let currentAnswer = "";
 let questionIndex = 0;
-const totalQuestions = 25;
+let totalQuestions = 25;
 
 let sessionGood = 0;
 let sessionWrong = 0;
 let mistakes = 0;
 
+let usedLetters = [];
 let plateCount = 0;
-const maxPlates = 10;
+let maxPlates = 10;
 
-// 🔥 letters tracking
-let usedLetters = new Set();
+function initQuiz(){
+  if(!document.getElementById("quiz")) return;
 
-startSession();
+  startSession();
+}
 
 function startSession(){
   questionIndex = 0;
   sessionGood = 0;
   sessionWrong = 0;
   mistakes = 0;
+  usedLetters = [];
   plateCount = 0;
-  usedLetters.clear();
 
   nextQuestion();
 }
 
+/* ================= UI ================= */
+
 function updateUI(){
+  if(!document.getElementById("progress")) return;
+
   document.getElementById("progress").innerText = questionIndex;
   document.getElementById("sessionGood").innerText = sessionGood;
   document.getElementById("sessionWrong").innerText = sessionWrong;
-  document.getElementById("streak").innerText = getStat("perfect");
 
   const percent = (questionIndex / totalQuestions) * 100;
   document.getElementById("progressBar").style.width = percent + "%";
 }
 
+/* ================= LETTER GARANTIE ================= */
+
 function getNextLetter(){
-  const remaining = letters.filter(l => !usedLetters.has(l));
+
+  const remaining = letters.filter(l => !usedLetters.includes(l));
+
   if(remaining.length > 0){
     return remaining[Math.floor(Math.random()*remaining.length)];
   }
+
   return letters[Math.floor(Math.random()*letters.length)];
 }
+
+/* ================= QUESTIONS ================= */
 
 window.nextQuestion = function(){
 
@@ -92,19 +99,23 @@ window.nextQuestion = function(){
 
   questionIndex++;
 
-  const box = quizEl;
+  const box = document.getElementById("quiz");
 
-  let type = (plateCount >= maxPlates)
-    ? 0
-    : (Math.random() < 0.5 ? 0 : 1);
+  let type = Math.random() < 0.5 ? 0 : 1;
 
-  if(usedLetters.size < letters.length){
+  if(plateCount >= maxPlates){
     type = 0;
   }
 
+  if(usedLetters.length < letters.length){
+    type = 0;
+  }
+
+  /* LETTER VRAAG */
   if(type === 0){
+
     const letter = getNextLetter();
-    usedLetters.add(letter);
+    usedLetters.push(letter);
 
     currentAnswer = nato[letter];
 
@@ -120,29 +131,22 @@ window.nextQuestion = function(){
     `;
   }
 
+  /* KENTEKEN */
   else {
+
     plateCount++;
 
-    const parts = [
-      randomLetter(),
-      randomLetter(),
-      randomNumber(2),
-      randomLetter()
-    ];
+    const l1 = randomLetter();
+    const l2 = randomLetter();
+    const l3 = randomLetter();
 
-    parts.forEach(p => {
-      if(typeof p === "string"){
-        p.split("").forEach(l => usedLetters.add(l));
-      }
-    });
+    usedLetters.push(l1,l2,l3);
 
-    const plate = parts.join("-");
+    const num = randomNumber(2);
 
-    currentAnswer = parts.map(p =>
-      isNaN(p)
-        ? p.split("").map(l => nato[l]).join(" ")
-        : p
-    ).join(" ").toLowerCase();
+    const plate = `${l1}${l2}-${num}-${l3}`;
+
+    currentAnswer = `${nato[l1]} ${nato[l2]} ${num} ${nato[l3]}`;
 
     box.innerHTML = `
       <h2>Kenteken</h2>
@@ -160,9 +164,14 @@ window.nextQuestion = function(){
   updateUI();
 };
 
+/* ================= CHECK ================= */
+
 window.check = function(){
+
   const input = document.getElementById("input");
   const button = document.getElementById("checkBtn");
+
+  if(!input || !button) return;
 
   const val = input.value.toLowerCase().trim();
   const correct = val === currentAnswer;
@@ -172,37 +181,38 @@ window.check = function(){
 
   if(correct){
     sessionGood++;
+    button.innerHTML = "Goed!";
+    button.classList.remove("bg-green-500");
+    button.classList.add("bg-green-600");
   } else {
     sessionWrong++;
     mistakes++;
+    button.innerHTML = `Fout — juiste antwoord: ${currentAnswer}`;
+    button.classList.remove("bg-green-500");
+    button.classList.add("bg-red-500");
   }
 
   updateUI();
 
-  button.innerHTML = correct
-    ? "Goed!"
-    : `Fout — juiste antwoord: ${currentAnswer}`;
-
-  button.classList.remove("bg-green-500");
-  button.classList.add(correct ? "bg-green-600" : "bg-red-500");
-
   setTimeout(() => {
-    quizEl.innerHTML += `
+    const box = document.getElementById("quiz");
+
+    box.innerHTML += `
       <button onclick="nextQuestion()"
         class="w-full bg-slate-700 p-4 rounded-xl mt-2">
         Volgende
       </button>
     `;
-  }, 400);
+  }, 300);
 };
+
+/* ================= END ================= */
 
 function endSession(){
 
-  if(mistakes === 0){
-    setStat("perfect", getStat("perfect")+1);
-  }
+  const box = document.getElementById("quiz");
 
-  quizEl.innerHTML = `
+  box.innerHTML = `
     <h2>Klaar!</h2>
     <p>${sessionGood} / ${totalQuestions}</p>
 
@@ -213,12 +223,12 @@ function endSession(){
   `;
 }
 
-/* helpers */
+/* ================= HELPERS ================= */
+
 function randomLetter(){
   return letters[Math.floor(Math.random()*letters.length)];
 }
+
 function randomNumber(len){
   return Math.floor(Math.random()*Math.pow(10,len-1) + Math.pow(10,len-1));
 }
-
-});
