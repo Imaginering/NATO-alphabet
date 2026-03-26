@@ -10,7 +10,7 @@ X:"x-ray",Y:"yankee",Z:"zulu"
 
 const letters = Object.keys(nato);
 
-/* ================= STORAGE ================= */
+/* STORAGE */
 function getStat(key){
   return parseInt(localStorage.getItem(key)) || 0;
 }
@@ -24,7 +24,7 @@ window.resetStats = function(){
   location.reload();
 };
 
-/* ================= RANDOM ================= */
+/* RANDOM */
 function randomLetter(){
   return letters[Math.floor(Math.random()*letters.length)];
 }
@@ -33,44 +33,8 @@ function randomNumber(len){
   return Math.floor(Math.random()*Math.pow(10,len-1) + Math.pow(10,len-1));
 }
 
-/* ================= LEARN ================= */
-if(document.getElementById("learn")){
-  const el = document.getElementById("learn");
-
-  el.innerHTML = letters.map(l => `
-    <button onclick="learnCheck('${l}')"
-      class="w-full bg-white/10 p-4 rounded-xl text-left active:scale-95 transition">
-      <span class="font-bold text-lg">${l}</span>
-    </button>
-  `).join("");
-}
-
-window.learnCheck = function(letter){
-  const answer = prompt(`Wat is ${letter}?`);
-  if(!answer) return;
-
-  const correct = answer.toLowerCase().trim() === nato[letter];
-
-  alert(
-    correct
-      ? "✅ Goed!"
-      : `❌ Fout! Antwoord: ${nato[letter]}`
-  );
-};
-
-/* ================= LIST ================= */
-if(document.getElementById("list")){
-  const el = document.getElementById("list");
-
-  el.innerHTML = letters.map(l => `
-    <div class="bg-white/10 p-4 rounded-xl flex justify-between">
-      <span class="font-bold">${l}</span>
-      <span class="opacity-80">${nato[l]}</span>
-    </div>
-  `).join("");
-}
-
 /* ================= QUIZ ================= */
+
 if(document.getElementById("quiz")){
 
 let currentAnswer = "";
@@ -80,12 +44,10 @@ const totalQuestions = 25;
 let sessionGood = 0;
 let sessionWrong = 0;
 let mistakes = 0;
-let streak = 0;
 
 let plateCount = 0;
 const maxPlates = 10;
 
-setStat("sessions", getStat("sessions")+1);
 startSession();
 
 /* SESSION */
@@ -94,7 +56,6 @@ function startSession(){
   sessionGood = 0;
   sessionWrong = 0;
   mistakes = 0;
-  streak = 0;
   plateCount = 0;
   nextQuestion();
 }
@@ -104,12 +65,9 @@ function updateUI(){
   document.getElementById("progress").innerText = questionIndex;
   document.getElementById("sessionGood").innerText = sessionGood;
   document.getElementById("sessionWrong").innerText = sessionWrong;
-  document.getElementById("streak").innerText = streak;
 
-  document.getElementById("good").innerText = getStat("good");
-  document.getElementById("wrong").innerText = getStat("wrong");
-  document.getElementById("sessions").innerText = getStat("sessions");
-  document.getElementById("perfect").innerText = getStat("perfect");
+  // 🔥 streak = aantal foutloze toetsen
+  document.getElementById("streak").innerText = getStat("perfect");
 
   const percent = (questionIndex / totalQuestions) * 100;
   document.getElementById("progressBar").style.width = percent + "%";
@@ -139,11 +97,11 @@ window.nextQuestion = function(){
       <h2 class="text-lg opacity-80">Wat is ${letter}?</h2>
 
       <input id="input"
-        class="w-full p-4 rounded-xl text-black text-lg focus:outline-none"
+        class="w-full p-4 rounded-xl text-black text-lg"
         placeholder="Typ antwoord">
 
       <button onclick="check()"
-        class="w-full bg-green-500 p-4 rounded-xl text-lg font-semibold active:scale-95 transition">
+        class="w-full bg-green-500 p-4 rounded-xl font-semibold active:scale-95 transition">
         Check
       </button>
     `;
@@ -176,14 +134,14 @@ window.nextQuestion = function(){
         placeholder="Bijv: alfa bravo 12">
 
       <button onclick="check()"
-        class="w-full bg-green-500 p-4 rounded-xl text-lg font-semibold active:scale-95 transition">
+        class="w-full bg-green-500 p-4 rounded-xl font-semibold active:scale-95 transition">
         Check
       </button>
     `;
   }
 
   updateUI();
-}
+};
 
 /* CHECK */
 window.check = function(){
@@ -194,13 +152,9 @@ window.check = function(){
 
   if(correct){
     sessionGood++;
-    setStat("good", getStat("good")+1);
-    streak++;
   } else {
     sessionWrong++;
-    setStat("wrong", getStat("wrong")+1);
     mistakes++;
-    streak = 0;
   }
 
   updateUI();
@@ -223,9 +177,10 @@ window.check = function(){
   `;
 };
 
-/* END SESSION */
+/* END */
 function endSession(){
 
+  // 🔥 alleen verhogen als foutloos
   if(mistakes === 0){
     setStat("perfect", getStat("perfect")+1);
   }
