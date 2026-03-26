@@ -1,12 +1,4 @@
-/* ================= INIT ================= */
-
 document.addEventListener("DOMContentLoaded", () => {
-  initLearn();
-  initList();
-  initQuiz();
-});
-
-/* ================= DATA ================= */
 
 const nato = {
 A:"alfa",B:"bravo",C:"charlie",D:"delta",E:"echo",F:"foxtrot",
@@ -33,40 +25,11 @@ window.resetStats = function(){
   location.reload();
 };
 
-/* ================= LEARN ================= */
-
-function initLearn(){
-  const el = document.getElementById("learn");
-  if(!el) return;
-
-  el.innerHTML = letters.map(l => `
-    <button onclick="learnCheck('${l}')"
-      class="w-full bg-white/10 p-4 rounded-xl text-left active:scale-95 transition">
-      <span class="font-bold text-lg">${l}</span>
-    </button>
-  `).join("");
-}
-
-window.learnCheck = function(letter){
-  const answer = prompt(`Wat is ${letter}?`);
-  if(!answer) return;
-
-  const correct = answer.toLowerCase().trim() === nato[letter];
-
-  alert(
-    correct
-      ? "Goed!"
-      : `Fout! Antwoord: ${nato[letter]}`
-  );
-};
-
 /* ================= LIST ================= */
 
-function initList(){
-  const el = document.getElementById("list");
-  if(!el) return;
-
-  el.innerHTML = letters.map(l => `
+const listEl = document.getElementById("list");
+if(listEl){
+  listEl.innerHTML = letters.map(l => `
     <div class="bg-white/10 p-4 rounded-xl flex justify-between">
       <span class="font-bold">${l}</span>
       <span>${nato[l]}</span>
@@ -76,15 +39,10 @@ function initList(){
 
 /* ================= QUIZ ================= */
 
-function initQuiz(){
-  const quiz = document.getElementById("quiz");
-  if(!quiz) return;
+const quizEl = document.getElementById("quiz");
+if(!quizEl) return;
 
-  startSession();
-}
-
-/* ================= QUIZ VARS ================= */
-
+/* STATE */
 let currentAnswer = "";
 let questionIndex = 0;
 const totalQuestions = 25;
@@ -96,7 +54,11 @@ let mistakes = 0;
 let plateCount = 0;
 const maxPlates = 10;
 
-/* ================= SESSION ================= */
+// 🔥 belangrijk: tracking letters
+let usedLetters = new Set();
+
+/* START */
+startSession();
 
 function startSession(){
   questionIndex = 0;
@@ -104,28 +66,35 @@ function startSession(){
   sessionWrong = 0;
   mistakes = 0;
   plateCount = 0;
+  usedLetters.clear();
 
   nextQuestion();
 }
 
-/* ================= UI ================= */
-
+/* UI */
 function updateUI(){
-  if(!document.getElementById("progress")) return;
-
   document.getElementById("progress").innerText = questionIndex;
   document.getElementById("sessionGood").innerText = sessionGood;
   document.getElementById("sessionWrong").innerText = sessionWrong;
-
-  // streak = aantal foutloze toetsen
   document.getElementById("streak").innerText = getStat("perfect");
 
   const percent = (questionIndex / totalQuestions) * 100;
   document.getElementById("progressBar").style.width = percent + "%";
 }
 
-/* ================= QUESTIONS ================= */
+/* LETTER PICK (GARANTIE) */
+function getNextLetter(){
+  // nog niet gebruikte letters eerst
+  const remaining = letters.filter(l => !usedLetters.has(l));
 
+  if(remaining.length > 0){
+    return remaining[Math.floor(Math.random()*remaining.length)];
+  }
+
+  return letters[Math.floor(Math.random()*letters.length)];
+}
+
+/* QUESTIONS */
 window.nextQuestion = function(){
 
   if(questionIndex >= totalQuestions){
@@ -135,27 +104,37 @@ window.nextQuestion = function(){
 
   questionIndex++;
 
-  const box = document.getElementById("quiz");
-
   let type = (plateCount >= maxPlates)
     ? 0
     : (Math.random() < 0.5 ? 0 : 1);
 
+  // 🔥 als nog niet alle letters gehad → forceer letter vraag
+  if(usedLetters.size < letters.length){
+    type = 0;
+  }
+
   if(type === 0){
-    const letter = randomLetter();
+    const letter = getNextLetter();
+    usedLetters.add(letter);
+
     currentAnswer = nato[letter];
 
-    box.innerHTML = `
-      <h2 class="text-lg opacity-80">Wat is ${letter}?</h2>
+    quizEl.innerHTML = `
+      <div class="animate-[fadeIn_0.3s] space-y-4">
 
-      <input id="input"
-        class="w-full p-4 rounded-xl text-black text-lg"
-        placeholder="Typ antwoord">
+        <h2 class="text-lg opacity-80">Wat is ${letter}?</h2>
 
-      <button onclick="check()"
-        class="w-full bg-green-500 p-4 rounded-xl font-semibold active:scale-95 transition">
-        Check
-      </button>
+        <input id="input"
+          class="w-full p-4 rounded-xl text-black text-lg"
+          placeholder="Typ antwoord">
+
+        <button id="checkBtn"
+          onclick="check()"
+          class="w-full bg-green-500 p-4 rounded-xl font-semibold active:scale-95 transition">
+          Check
+        </button>
+
+      </div>
     `;
   }
 
@@ -163,10 +142,17 @@ window.nextQuestion = function(){
     plateCount++;
 
     const parts = [
-      randomLetter()+randomLetter(),
+      randomLetter(),
+      randomLetter(),
       randomNumber(2),
-      randomLetter()+randomLetter()
+      randomLetter()
     ];
+
+    parts.forEach(p => {
+      if(typeof p === "string"){
+        p.split("").forEach(l => usedLetters.add(l));
+      }
+    });
 
     const plate = parts.join("-");
 
@@ -176,32 +162,39 @@ window.nextQuestion = function(){
         : p
     ).join(" ").toLowerCase();
 
-    box.innerHTML = `
-      <h2 class="text-lg opacity-80">Kenteken</h2>
+    quizEl.innerHTML = `
+      <div class="animate-[fadeIn_0.3s] space-y-4">
 
-      <h1 class="text-3xl font-bold tracking-widest">${plate}</h1>
+        <h2 class="text-lg opacity-80">Kenteken</h2>
 
-      <input id="input"
-        class="w-full p-4 rounded-xl text-black text-lg"
-        placeholder="Bijv: alfa bravo 12">
+        <h1 class="text-3xl font-bold tracking-widest">${plate}</h1>
 
-      <button onclick="check()"
-        class="w-full bg-green-500 p-4 rounded-xl font-semibold active:scale-95 transition">
-        Check
-      </button>
+        <input id="input"
+          class="w-full p-4 rounded-xl text-black text-lg">
+
+        <button id="checkBtn"
+          onclick="check()"
+          class="w-full bg-green-500 p-4 rounded-xl font-semibold active:scale-95 transition">
+          Check
+        </button>
+
+      </div>
     `;
   }
 
   updateUI();
 };
 
-/* ================= CHECK ================= */
-
+/* CHECK */
 window.check = function(){
-  const val = document.getElementById("input").value.toLowerCase().trim();
-  const box = document.getElementById("quiz");
+  const input = document.getElementById("input");
+  const button = document.getElementById("checkBtn");
 
+  const val = input.value.toLowerCase().trim();
   const correct = val === currentAnswer;
+
+  input.disabled = true;
+  button.disabled = true;
 
   if(correct){
     sessionGood++;
@@ -212,36 +205,34 @@ window.check = function(){
 
   updateUI();
 
-  box.innerHTML += `
-    <div class="p-4 rounded-xl mt-2 text-lg font-semibold
-      ${correct ? "bg-green-500" : "bg-red-500"}">
+  button.innerHTML = correct
+    ? "Goed!"
+    : `Fout — juiste antwoord: ${currentAnswer}`;
 
-      ${
-        correct
-          ? "Goed!"
-          : `Fout, het goede antwoord is <strong>${currentAnswer}</strong>`
-      }
-    </div>
+  button.classList.remove("bg-green-500");
+  button.classList.add(correct ? "bg-green-600" : "bg-red-500");
 
-    <button onclick="nextQuestion()"
-      class="w-full bg-slate-700 p-4 rounded-xl mt-2 active:scale-95 transition">
-      Volgende
-    </button>
-  `;
+  button.classList.add("scale-105");
+
+  setTimeout(() => {
+    quizEl.innerHTML += `
+      <button onclick="nextQuestion()"
+        class="w-full bg-slate-700 p-4 rounded-xl mt-2 animate-[fadeIn_0.3s]">
+        Volgende
+      </button>
+    `;
+  }, 500);
 };
 
-/* ================= END ================= */
-
+/* END */
 function endSession(){
 
   if(mistakes === 0){
     setStat("perfect", getStat("perfect")+1);
   }
 
-  const box = document.getElementById("quiz");
-
-  box.innerHTML = `
-    <div class="bg-white/10 p-6 rounded-2xl text-center space-y-4">
+  quizEl.innerHTML = `
+    <div class="bg-white/10 p-6 rounded-2xl text-center space-y-4 animate-[fadeIn_0.4s]">
 
       <h2 class="text-2xl font-bold">Klaar!</h2>
 
@@ -257,12 +248,9 @@ function endSession(){
 
     </div>
   `;
-
-  updateUI();
 }
 
-/* ================= HELPERS ================= */
-
+/* HELPERS */
 function randomLetter(){
   return letters[Math.floor(Math.random()*letters.length)];
 }
@@ -270,3 +258,5 @@ function randomLetter(){
 function randomNumber(len){
   return Math.floor(Math.random()*Math.pow(10,len-1) + Math.pow(10,len-1));
 }
+
+});
