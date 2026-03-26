@@ -8,6 +8,31 @@ X:"x-ray",Y:"yankee",Z:"zulu"
 
 const letters = Object.keys(nato);
 
+let currentAnswer = "";
+let mistakes = 0;
+
+/* STORAGE */
+function getStat(key){
+  return parseInt(localStorage.getItem(key)) || 0;
+}
+
+function setStat(key,val){
+  localStorage.setItem(key,val);
+}
+
+function updateStats(){
+  document.getElementById("good").innerText = getStat("good");
+  document.getElementById("wrong").innerText = getStat("wrong");
+  document.getElementById("sessions").innerText = getStat("sessions");
+  document.getElementById("perfect").innerText = getStat("perfect");
+}
+
+function resetStats(){
+  localStorage.clear();
+  updateStats();
+}
+
+/* RANDOM */
 function randomLetter(){
   return letters[Math.floor(Math.random()*letters.length)];
 }
@@ -16,75 +41,42 @@ function randomNumber(len){
   return Math.floor(Math.random()*Math.pow(10,len-1) + Math.pow(10,len-1));
 }
 
-/* LEARN */
-if(document.getElementById("learn")){
-  document.getElementById("learn").innerHTML =
-    letters.map(l => `
-      <button onclick="learnCheck('${l}')" 
-        class="w-full bg-white/10 p-3 rounded-xl text-left">
-        ${l}
-      </button>
-    `).join("");
-}
-
-function learnCheck(letter){
-  let answer = prompt("Wat is deze letter?");
-  if(!answer) return;
-
-  alert(
-    answer.toLowerCase() === nato[letter]
-    ? "✅ Goed!"
-    : "❌ " + nato[letter]
-  );
-}
-
-/* LIST */
-if(document.getElementById("list")){
-  document.getElementById("list").innerHTML =
-    letters.map(l => `
-      <div class="bg-white/10 p-3 rounded-xl">
-        ${l} = ${nato[l]}
-      </div>
-    `).join("");
-}
-
-/* QUIZ */
-let currentAnswer = "";
-
+/* QUIZ INIT */
 if(document.getElementById("quiz")){
+  setStat("sessions", getStat("sessions")+1);
+  updateStats();
   newQuestion();
 }
 
+/* QUESTIONS */
 function newQuestion(){
   const type = Math.floor(Math.random()*2);
   const box = document.getElementById("quiz");
 
   if(type === 0){
-    // Letter → woord
     let letter = randomLetter();
     currentAnswer = nato[letter];
 
     box.innerHTML = `
-      <h2 class="text-lg">Wat is ${letter}?</h2>
-      <input id="input" class="w-full p-4 rounded-xl text-black" placeholder="Typ antwoord">
-      <button onclick="check()" class="bg-slate-700 p-3 rounded-xl">Check</button>
+      <h2 class="text-lg opacity-80">Wat is ${letter}?</h2>
+
+      <input id="input"
+        class="w-full p-4 rounded-xl text-black text-lg"
+        placeholder="Typ antwoord">
+
+      <button onclick="check()"
+        class="w-full bg-green-500 p-4 rounded-xl text-lg font-semibold">
+        Check
+      </button>
     `;
   }
 
   else {
-    // Kenteken
-    const formatType = Math.floor(Math.random()*3);
-    let parts;
-
-    if(formatType === 0){
-      parts = [randomLetter()+randomLetter(), randomNumber(2), randomLetter()+randomLetter()];
-    }
-    else if(formatType === 1){
-      parts = [randomNumber(2), randomLetter()+randomLetter(), randomNumber(2)];
-    }
-    else {
-      parts = [randomNumber(1), randomLetter()+randomLetter()+randomLetter(), randomNumber(3)];
-    }
+    let parts = [
+      randomLetter()+randomLetter(),
+      randomNumber(2),
+      randomLetter()+randomLetter()
+    ];
 
     let plate = parts.join("-");
 
@@ -95,24 +87,63 @@ function newQuestion(){
     ).join(" ").toLowerCase();
 
     box.innerHTML = `
-      <h2 class="text-lg">Kenteken</h2>
-      <h1 class="text-2xl font-bold">${plate}</h1>
-      <input id="input" class="w-full p-4 rounded-xl text-black" placeholder="Bijv: alfa bravo 12">
-      <button onclick="check()" class="bg-slate-700 p-3 rounded-xl">Check</button>
+      <h2 class="text-lg opacity-80">Kenteken</h2>
+
+      <h1 class="text-3xl font-bold tracking-widest">${plate}</h1>
+
+      <input id="input"
+        class="w-full p-4 rounded-xl text-black text-lg"
+        placeholder="Bijv: alfa bravo 12">
+
+      <button onclick="check()"
+        class="w-full bg-green-500 p-4 rounded-xl text-lg font-semibold">
+        Check
+      </button>
     `;
   }
 }
 
+/* CHECK */
 function check(){
-  let val = document.getElementById("input").value.toLowerCase();
-  let box = document.getElementById("quiz");
+  const input = document.getElementById("input");
+  const val = input.value.toLowerCase().trim();
+  const box = document.getElementById("quiz");
+
+  let correct = val === currentAnswer;
+
+  if(correct){
+    setStat("good", getStat("good")+1);
+  } else {
+    setStat("wrong", getStat("wrong")+1);
+    mistakes++;
+  }
+
+  updateStats();
 
   box.innerHTML += `
-    <div class="mt-4 p-3 rounded-xl ${val === currentAnswer ? 'bg-green-600' : 'bg-red-600'}">
-      ${val === currentAnswer ? "✅ Goed!" : "❌ " + currentAnswer}
+    <div class="p-4 rounded-xl text-lg font-semibold
+      ${correct ? "bg-green-500" : "bg-red-500"}">
+
+      ${correct ? "Goed!" : "Fout!"}<br>
+      <span class="text-sm opacity-80">${currentAnswer}</span>
     </div>
-    <button onclick="newQuestion()" class="bg-slate-700 p-3 rounded-xl mt-2 w-full">
+
+    <button onclick="nextQuestion()"
+      class="w-full bg-slate-700 p-4 rounded-xl">
       Volgende
     </button>
   `;
+}
+
+/* NEXT */
+function nextQuestion(){
+  if(getStat("good") + getStat("wrong") >= 10){
+    // einde sessie
+    if(mistakes === 0){
+      setStat("perfect", getStat("perfect")+1);
+    }
+    mistakes = 0;
+  }
+
+  newQuestion();
 }
