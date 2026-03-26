@@ -1,3 +1,11 @@
+/* ================= INIT ================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+  initLearn();
+  initList();
+  initQuiz();
+});
+
 /* ================= DATA ================= */
 
 const nato = {
@@ -20,20 +28,10 @@ function setStat(key,val){
   localStorage.setItem(key,val);
 }
 
-function resetStats(){
+window.resetStats = function(){
   localStorage.clear();
   location.reload();
-}
-
-/* ================= RANDOM ================= */
-
-function randomLetter(){
-  return letters[Math.floor(Math.random()*letters.length)];
-}
-
-function randomNumber(len){
-  return Math.floor(Math.random()*Math.pow(10,len-1) + Math.pow(10,len-1));
-}
+};
 
 /* ================= LEARN ================= */
 
@@ -43,13 +41,13 @@ function initLearn(){
 
   el.innerHTML = letters.map(l => `
     <button onclick="learnCheck('${l}')"
-      class="w-full bg-white/10 p-4 rounded-xl text-left active:scale-95">
+      class="w-full bg-white/10 p-4 rounded-xl text-left active:scale-95 transition">
       <span class="font-bold text-lg">${l}</span>
     </button>
   `).join("");
 }
 
-function learnCheck(letter){
+window.learnCheck = function(letter){
   const answer = prompt(`Wat is ${letter}?`);
   if(!answer) return;
 
@@ -60,7 +58,7 @@ function learnCheck(letter){
       ? "Goed!"
       : `Fout! Antwoord: ${nato[letter]}`
   );
-}
+};
 
 /* ================= LIST ================= */
 
@@ -78,20 +76,27 @@ function initList(){
 
 /* ================= QUIZ ================= */
 
+function initQuiz(){
+  const quiz = document.getElementById("quiz");
+  if(!quiz) return;
+
+  startSession();
+}
+
+/* ================= QUIZ VARS ================= */
+
 let currentAnswer = "";
 let questionIndex = 0;
+const totalQuestions = 25;
+
 let sessionGood = 0;
 let sessionWrong = 0;
 let mistakes = 0;
 
 let plateCount = 0;
-const totalQuestions = 25;
 const maxPlates = 10;
 
-function initQuiz(){
-  if(!document.getElementById("quiz")) return;
-  startSession();
-}
+/* ================= SESSION ================= */
 
 function startSession(){
   questionIndex = 0;
@@ -103,20 +108,25 @@ function startSession(){
   nextQuestion();
 }
 
+/* ================= UI ================= */
+
 function updateUI(){
-  const progress = document.getElementById("progress");
-  if(!progress) return;
+  if(!document.getElementById("progress")) return;
 
   document.getElementById("progress").innerText = questionIndex;
   document.getElementById("sessionGood").innerText = sessionGood;
   document.getElementById("sessionWrong").innerText = sessionWrong;
+
+  // streak = aantal foutloze toetsen
   document.getElementById("streak").innerText = getStat("perfect");
 
   const percent = (questionIndex / totalQuestions) * 100;
   document.getElementById("progressBar").style.width = percent + "%";
 }
 
-function nextQuestion(){
+/* ================= QUESTIONS ================= */
+
+window.nextQuestion = function(){
 
   if(questionIndex >= totalQuestions){
     endSession();
@@ -136,14 +146,14 @@ function nextQuestion(){
     currentAnswer = nato[letter];
 
     box.innerHTML = `
-      <h2>Wat is ${letter}?</h2>
+      <h2 class="text-lg opacity-80">Wat is ${letter}?</h2>
 
       <input id="input"
-        class="w-full p-4 rounded-xl text-black"
+        class="w-full p-4 rounded-xl text-black text-lg"
         placeholder="Typ antwoord">
 
       <button onclick="check()"
-        class="w-full bg-green-500 p-4 rounded-xl mt-2">
+        class="w-full bg-green-500 p-4 rounded-xl font-semibold active:scale-95 transition">
         Check
       </button>
     `;
@@ -167,23 +177,27 @@ function nextQuestion(){
     ).join(" ").toLowerCase();
 
     box.innerHTML = `
-      <h2>Kenteken</h2>
-      <h1>${plate}</h1>
+      <h2 class="text-lg opacity-80">Kenteken</h2>
+
+      <h1 class="text-3xl font-bold tracking-widest">${plate}</h1>
 
       <input id="input"
-        class="w-full p-4 rounded-xl text-black">
+        class="w-full p-4 rounded-xl text-black text-lg"
+        placeholder="Bijv: alfa bravo 12">
 
       <button onclick="check()"
-        class="w-full bg-green-500 p-4 rounded-xl mt-2">
+        class="w-full bg-green-500 p-4 rounded-xl font-semibold active:scale-95 transition">
         Check
       </button>
     `;
   }
 
   updateUI();
-}
+};
 
-function check(){
+/* ================= CHECK ================= */
+
+window.check = function(){
   const val = document.getElementById("input").value.toLowerCase().trim();
   const box = document.getElementById("quiz");
 
@@ -199,20 +213,24 @@ function check(){
   updateUI();
 
   box.innerHTML += `
-    <div class="p-4 mt-2 ${correct ? "bg-green-500" : "bg-red-500"}">
+    <div class="p-4 rounded-xl mt-2 text-lg font-semibold
+      ${correct ? "bg-green-500" : "bg-red-500"}">
+
       ${
         correct
           ? "Goed!"
-          : `Fout, het goede antwoord is ${currentAnswer}`
+          : `Fout, het goede antwoord is <strong>${currentAnswer}</strong>`
       }
     </div>
 
     <button onclick="nextQuestion()"
-      class="w-full bg-slate-700 p-4 rounded-xl mt-2">
+      class="w-full bg-slate-700 p-4 rounded-xl mt-2 active:scale-95 transition">
       Volgende
     </button>
   `;
-}
+};
+
+/* ================= END ================= */
 
 function endSession(){
 
@@ -223,20 +241,32 @@ function endSession(){
   const box = document.getElementById("quiz");
 
   box.innerHTML = `
-    <h2>Klaar!</h2>
-    <p>${sessionGood} / ${totalQuestions}</p>
+    <div class="bg-white/10 p-6 rounded-2xl text-center space-y-4">
 
-    <button onclick="startSession()"
-      class="w-full bg-green-500 p-4 rounded-xl mt-2">
-      Nieuwe toets
-    </button>
+      <h2 class="text-2xl font-bold">Klaar!</h2>
+
+      <p>
+        Score: ${sessionGood} / ${totalQuestions}<br>
+        Fouten: ${mistakes}
+      </p>
+
+      <button onclick="startSession()"
+        class="w-full bg-green-500 p-4 rounded-xl">
+        Nieuwe toets
+      </button>
+
+    </div>
   `;
+
+  updateUI();
 }
 
-/* ================= INIT ================= */
+/* ================= HELPERS ================= */
 
-document.addEventListener("DOMContentLoaded", () => {
-  initLearn();
-  initList();
-  initQuiz();
-});
+function randomLetter(){
+  return letters[Math.floor(Math.random()*letters.length)];
+}
+
+function randomNumber(len){
+  return Math.floor(Math.random()*Math.pow(10,len-1) + Math.pow(10,len-1));
+}
