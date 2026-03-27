@@ -134,38 +134,64 @@ window.nextQuestion = function(){
 
   else {
 
-    plateCount++;
+  plateCount++;
 
-    const l1 = getNextLetter();
-    const l2 = getNextLetter();
-    const l3 = getNextLetter();
+  const formats = [
+    "LL-NN-LL",
+    "NN-LL-LL",
+    "NN-LLL-N",
+    "N-LLL-NN",
+    "LL-NNN-L",
+    "L-NNN-LL"
+  ];
 
-    [l1,l2,l3].forEach(l => {
-      if(!usedLetters.includes(l)){
+  const format = formats[Math.floor(Math.random() * formats.length)];
+
+  let plateParts = [];
+  let answerParts = [];
+
+  for (let char of format) {
+
+    if (char === "L") {
+      const l = getNextLetter();
+
+      // voeg toe aan gebruikte letters
+      if (!usedLetters.includes(l)) {
         usedLetters.push(l);
       }
-    });
 
-    const num = randomNumber(2);
+      plateParts.push(l);
+      answerParts.push(nato[l]);
+    }
 
-    const plate = `${l1}${l2}-${num}-${l3}`;
+    else if (char === "N") {
+      const n = Math.floor(Math.random() * 10);
+      plateParts.push(n);
+      answerParts.push(n);
+    }
 
-    currentAnswer = `${nato[l1]} ${nato[l2]} ${num} ${nato[l3]}`;
-
-    box.innerHTML = `
-      <h2>Kenteken</h2>
-      <h1 class="text-2xl font-bold tracking-widest">${plate}</h1>
-
-      <input id="input"
-        class="w-full p-4 rounded-xl text-black"
-        placeholder="Bijv: alfa bravo 12">
-
-      <button id="checkBtn" onclick="check()"
-        class="w-full bg-green-500 p-4 rounded-xl mt-2">
-        Check
-      </button>
-    `;
+    else if (char === "-") {
+      plateParts.push("-");
+    }
   }
+
+  const plate = plateParts.join("");
+  currentAnswer = answerParts.join(" ").toLowerCase();
+
+  box.innerHTML = `
+    <h2>Kenteken</h2>
+    <h1 class="text-2xl font-bold tracking-widest">${plate}</h1>
+
+    <input id="input"
+      class="w-full p-4 rounded-xl text-black"
+      placeholder="Bijv: alfa bravo 12">
+
+    <button id="checkBtn" onclick="check()"
+      class="w-full bg-green-500 p-4 rounded-xl mt-2">
+      Check
+    </button>
+  `;
+}
 
   updateUI();
 };
