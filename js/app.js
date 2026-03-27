@@ -72,12 +72,22 @@ function updateUI(){
   document.getElementById("progressBar").style.width = percent + "%";
 }
 
+/* ================= NORMALIZE ================= */
+
+function normalizeAnswer(str){
+  return str
+    .toLowerCase()
+    .replace(/xray/g, "x-ray")        // xray → x-ray
+    .replace(/\s+/g, " ")             // dubbele spaties weg
+    .replace(/(\d)\s+(?=\d)/g, "$1")  // 3 0 1 → 301
+    .trim();
+}
+
 /* ================= SLIMME LETTER KEUZE ================= */
 
 function getNextLetter(){
   const remaining = letters.filter(l => !usedLetters.includes(l));
 
-  // hogere kans op ontbrekende letters
   if(remaining.length > 0 && Math.random() < 0.7){
     return remaining[Math.floor(Math.random()*remaining.length)];
   }
@@ -104,8 +114,7 @@ window.nextQuestion = function(){
     type = 0;
   }
 
-  /* ================= LETTER VRAAG ================= */
-
+  /* LETTER */
   if(type === 0){
 
     const letter = getNextLetter();
@@ -130,68 +139,66 @@ window.nextQuestion = function(){
     `;
   }
 
-  /* ================= KENTEKEN ================= */
-
+  /* KENTEKEN */
   else {
 
-  plateCount++;
+    plateCount++;
 
-  const formats = [
-    "LL-NN-LL",
-    "NN-LL-LL",
-    "NN-LLL-N",
-    "N-LLL-NN",
-    "LL-NNN-L",
-    "L-NNN-LL"
-  ];
+    const formats = [
+      "LL-NN-LL",
+      "NN-LL-LL",
+      "NN-LLL-N",
+      "N-LLL-NN",
+      "LL-NNN-L",
+      "L-NNN-LL"
+    ];
 
-  const format = formats[Math.floor(Math.random() * formats.length)];
+    const format = formats[Math.floor(Math.random() * formats.length)];
 
-  let plateParts = [];
-  let answerParts = [];
+    let plateParts = [];
+    let answerParts = [];
 
-  for (let char of format) {
+    for (let char of format) {
 
-    if (char === "L") {
-      const l = getNextLetter();
+      if (char === "L") {
+        const l = getNextLetter();
 
-      // voeg toe aan gebruikte letters
-      if (!usedLetters.includes(l)) {
-        usedLetters.push(l);
+        if (!usedLetters.includes(l)) {
+          usedLetters.push(l);
+        }
+
+        plateParts.push(l);
+        answerParts.push(nato[l]);
       }
 
-      plateParts.push(l);
-      answerParts.push(nato[l]);
+      else if (char === "N") {
+        const n = Math.floor(Math.random() * 10);
+        plateParts.push(n);
+        answerParts.push(n);
+      }
+
+      else if (char === "-") {
+        plateParts.push("-");
+      }
     }
 
-    else if (char === "N") {
-      const n = Math.floor(Math.random() * 10);
-      plateParts.push(n);
-      answerParts.push(n);
-    }
+    const plate = plateParts.join("");
+    currentAnswer = answerParts.join(" ").toLowerCase();
 
-    else if (char === "-") {
-      plateParts.push("-");
-    }
+    box.innerHTML = `
+      <h2>Kenteken</h2>
+      <h1 class="text-2xl font-bold tracking-widest">${plate}</h1>
+
+      <input id="input"
+        class="w-full p-4 rounded-xl text-black"
+        placeholder="Bijv: alfa bravo 12">
+
+      <button id="checkBtn" onclick="check()"
+        class="w-full bg-green-500 p-4 rounded-xl mt-2">
+        Check
+      </button>
+    `;
   }
-
-  const plate = plateParts.join("");
-  currentAnswer = answerParts.join(" ").toLowerCase();
-
-  box.innerHTML = `
-    <h2>Kenteken</h2>
-    <h1 class="text-2xl font-bold tracking-widest">${plate}</h1>
-
-    <input id="input"
-      class="w-full p-4 rounded-xl text-black"
-      placeholder="Bijv: alfa bravo 12">
-
-    <button id="checkBtn" onclick="check()"
-      class="w-full bg-green-500 p-4 rounded-xl mt-2">
-      Check
-    </button>
-  `;
-}
 
   updateUI();
 };
@@ -205,8 +212,10 @@ window.check = function(){
 
   if(!input || !button) return;
 
-  const val = input.value.toLowerCase().trim();
-  const correct = val === currentAnswer;
+  const val = normalizeAnswer(input.value);
+  const correctAnswer = normalizeAnswer(currentAnswer);
+
+  const correct = val === correctAnswer;
 
   input.disabled = true;
   button.disabled = true;
