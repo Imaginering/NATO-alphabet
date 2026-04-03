@@ -7,6 +7,9 @@ X:"x-ray",Y:"yankee",Z:"zulu"
 };
 
 const letters = Object.keys(nato);
+const INPUT_CLASS = "w-full rounded-xl border border-slate-300 bg-white px-4 py-3 pr-11 text-[hsl(207.69_100%_25.5%)] outline-none transition placeholder:text-slate-400 focus:border-[hsl(207.69_100%_25.5%)] focus:ring-2 focus:ring-[hsl(207.69_75%_93%)]";
+const BUTTON_BASE = "w-full rounded-xl px-4 py-3 font-semibold transition disabled:cursor-not-allowed disabled:opacity-80";
+const BUTTON_PRIMARY = `${BUTTON_BASE} bg-[hsl(207.69_100%_25.5%)] text-white hover:bg-[hsl(207.69_100%_20%)]`;
 
 /* ================= INIT ================= */
 
@@ -21,12 +24,20 @@ function initList(){
   const el = document.getElementById("list");
   if(!el) return;
 
-  el.innerHTML = letters.map(l => `
-    <div class="bg-white/10 p-4 rounded-xl flex justify-between">
-      <span class="font-bold">${l}</span>
-      <span>${nato[l]}</span>
+  el.innerHTML = `
+    <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="flex items-center justify-between gap-6 bg-[hsl(207.69_75%_93%)] px-4 py-3 text-xs font-bold uppercase tracking-wide text-[hsl(207.69_100%_25.5%)] sm:grid sm:grid-cols-[96px_1fr] sm:gap-3">
+        <span>Letter</span>
+        <span class="text-right sm:text-left">Codewoord</span>
+      </div>
+      ${letters.map((l, index) => `
+      <div class="flex items-center justify-between gap-6 px-4 py-3 sm:grid sm:grid-cols-[96px_1fr] sm:gap-3 ${index < letters.length - 1 ? "border-b border-slate-200" : ""}">
+        <span class="text-lg font-extrabold text-[hsl(207.69_100%_25.5%)]">${l}</span>
+        <span class="text-right text-sm font-semibold capitalize text-[hsl(207.69_100%_25.5%)] sm:text-left">${nato[l]}</span>
+      </div>
+      `).join("")}
     </div>
-  `).join("");
+  `;
 }
 
 /* ================= QUIZ ================= */
@@ -107,6 +118,7 @@ window.nextQuestion = function(){
   questionIndex++;
 
   const box = document.getElementById("quiz");
+  box.className = "flex flex-col gap-3";
 
   let type = Math.random() < 0.5 ? 0 : 1;
 
@@ -126,15 +138,20 @@ window.nextQuestion = function(){
     currentAnswer = nato[letter];
 
     box.innerHTML = `
-      <h2 class="text-lg">Wat is ${letter}?</h2>
+      <h2 class="text-lg font-bold text-[hsl(207.69_100%_25.5%)]">Wat is ${letter}?</h2>
 
-      <input id="input"
-        class="w-full p-4 rounded-xl text-black"
-        placeholder="Typ antwoord">
+      <div class="relative">
+        <input id="input"
+          class="${INPUT_CLASS}"
+          placeholder="Typ antwoord">
+        <span id="inputStateIcon" class="pointer-events-none absolute inset-y-0 right-3 hidden items-center text-lg font-bold"></span>
+      </div>
+
+      <div id="feedback" class="hidden rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700"></div>
 
       <button id="checkBtn" onclick="check()"
-        class="w-full bg-green-500 p-4 rounded-xl mt-2">
-        Check
+        class="${BUTTON_PRIMARY}">
+        Controleer
       </button>
     `;
   }
@@ -186,16 +203,21 @@ window.nextQuestion = function(){
     currentAnswer = answerParts.join(" ").toLowerCase();
 
     box.innerHTML = `
-      <h2>Kenteken</h2>
-      <h1 class="text-2xl font-bold tracking-widest">${plate}</h1>
+      <h2 class="text-sm font-semibold uppercase tracking-wide text-[hsl(207.69_100%_25.5%/.75)]">Kenteken</h2>
+      <h1 class="text-2xl font-extrabold tracking-widest text-[hsl(207.69_100%_25.5%)]">${plate}</h1>
 
-      <input id="input"
-        class="w-full p-4 rounded-xl text-black"
-        placeholder="Bijv: alfa bravo 12">
+      <div class="relative">
+        <input id="input"
+          class="${INPUT_CLASS}"
+          placeholder="Bijv: alfa bravo 12">
+        <span id="inputStateIcon" class="pointer-events-none absolute inset-y-0 right-3 hidden items-center text-lg font-bold"></span>
+      </div>
+
+      <div id="feedback" class="hidden rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700"></div>
 
       <button id="checkBtn" onclick="check()"
-        class="w-full bg-green-500 p-4 rounded-xl mt-2">
-        Check
+        class="${BUTTON_PRIMARY}">
+        Controleer
       </button>
     `;
   }
@@ -209,8 +231,10 @@ window.check = function(){
 
   const input = document.getElementById("input");
   const button = document.getElementById("checkBtn");
+  const feedback = document.getElementById("feedback");
+  const inputStateIcon = document.getElementById("inputStateIcon");
 
-  if(!input || !button) return;
+  if(!input || !button || !feedback || !inputStateIcon) return;
 
   const val = normalizeAnswer(input.value);
   const correctAnswer = normalizeAnswer(currentAnswer);
@@ -222,29 +246,34 @@ window.check = function(){
 
   if(correct){
     sessionGood++;
-    button.innerHTML = "Goed!";
-    button.classList.remove("bg-green-500");
-    button.classList.add("bg-green-600");
+    button.className = `${BUTTON_PRIMARY} opacity-70`;
+    input.classList.remove("border-slate-300", "border-red-500", "focus:border-[hsl(207.69_100%_25.5%)]", "focus:ring-[hsl(207.69_75%_93%)]", "focus:border-red-500", "focus:ring-red-100");
+    input.classList.add("border-emerald-500", "focus:border-emerald-500", "focus:ring-emerald-100");
+    inputStateIcon.classList.remove("hidden");
+    inputStateIcon.classList.add("flex", "text-emerald-600");
+    inputStateIcon.classList.remove("text-red-600");
+    inputStateIcon.textContent = "✓";
+    feedback.className = "hidden rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700";
+    feedback.innerHTML = "";
   } else {
     sessionWrong++;
     mistakes++;
-    button.innerHTML = `Fout — juiste antwoord: ${currentAnswer}`;
-    button.classList.remove("bg-green-500");
-    button.classList.add("bg-red-500");
+    button.className = `${BUTTON_PRIMARY} opacity-70`;
+    input.classList.remove("border-slate-300", "border-emerald-500", "focus:border-[hsl(207.69_100%_25.5%)]", "focus:ring-[hsl(207.69_75%_93%)]", "focus:border-emerald-500", "focus:ring-emerald-100");
+    input.classList.add("border-red-500", "focus:border-red-500", "focus:ring-red-100");
+    inputStateIcon.classList.remove("hidden");
+    inputStateIcon.classList.add("flex", "text-red-600");
+    inputStateIcon.classList.remove("text-emerald-600");
+    inputStateIcon.textContent = "✕";
+    feedback.className = "rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700";
+    feedback.innerHTML = `Onjuist. Juiste antwoord: <span class="font-bold">${currentAnswer}</span>`;
   }
 
+  button.disabled = false;
+  button.innerHTML = "Volgende";
+  button.className = BUTTON_PRIMARY;
+  button.onclick = nextQuestion;
   updateUI();
-
-  setTimeout(() => {
-    const box = document.getElementById("quiz");
-
-    box.innerHTML += `
-      <button onclick="nextQuestion()"
-        class="w-full bg-slate-700 p-4 rounded-xl mt-2">
-        Volgende
-      </button>
-    `;
-  }, 300);
 };
 
 /* ================= END ================= */
@@ -254,11 +283,11 @@ function endSession(){
   const box = document.getElementById("quiz");
 
   box.innerHTML = `
-    <h2>Klaar!</h2>
-    <p>${sessionGood} / ${totalQuestions}</p>
+    <h2 class="text-xl font-bold text-[hsl(207.69_100%_25.5%)]">Klaar!</h2>
+    <p class="mt-1 text-sm text-[hsl(207.69_100%_25.5%/.85)]">${sessionGood} / ${totalQuestions} correct</p>
 
     <button onclick="startSession()"
-      class="w-full bg-green-500 p-4 rounded-xl mt-2">
+      class="${BUTTON_PRIMARY} mt-3">
       Nieuwe toets
     </button>
   `;

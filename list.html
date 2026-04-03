@@ -1,25 +1,69 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alfabet</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="js/app.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alfabet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Open Sans", "ui-sans-serif", "system-ui", "sans-serif"]
+          },
+          colors: {
+            brand: {
+              DEFAULT: "hsl(207.69 100% 25.5%)",
+              soft: "hsl(207.69 75% 93%)",
+              deep: "hsl(207.69 100% 20%)"
+            },
+            accent: "#0093d9"
+          },
+          boxShadow: {
+            soft: "0 10px 35px -20px hsl(207.69 100% 25.5% / 0.45)"
+          }
+        }
+      }
+    };
+  </script>
+  <script src="js/app.js" defer></script>
 </head>
+<body class="min-h-screen bg-slate-100 text-brand antialiased">
+  <div class="flex min-h-screen w-full flex-col bg-white">
+    <header class="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <div class="bg-accent px-4 py-2 text-xs font-bold tracking-wide text-white"></div>
+      <div class="mx-auto w-full max-w-6xl px-4 pb-4 pt-3 md:px-8">
+        <div class="md:max-w-2xl">
+          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-brand">NATO Trainer</p>
+          <h1 class="text-2xl font-extrabold text-brand">Alfabet overzicht</h1>
+        </div>
+      </div>
+    </header>
 
-<body class="min-h-screen bg-gradient-to-b from-blue-700 to-slate-900 text-white p-4">
+    <main class="flex-1 pb-28 pt-5 md:pb-10">
+      <div class="mx-auto w-full max-w-6xl px-4 md:px-8">
+        <section class="mb-4">
+          <h2 class="text-base font-bold text-brand">Alle letters en codewoorden</h2>
+          <p class="text-sm text-brand/80">Gebruik dit overzicht als naslag tijdens het oefenen.</p>
+        </section>
 
-<div class="max-w-md mx-auto">
-
-<h1 class="text-2xl font-bold mb-4">Alfabet</h1>
-
-<div id="list" class="space-y-2"></div>
-
-<a href="index.html" class="block bg-white/10 text-center p-4 rounded-xl mt-4">
-⬅️ Terug
-</a>
-
-</div>
+        <div id="list"></div>
+      </div>
+    </main>
+    
+    <nav class="fixed bottom-0 left-0 z-30 w-full border-t border-slate-200 bg-white/95 pb-4 pt-3 backdrop-blur md:static md:border-t md:bg-white md:pb-6 md:pt-4">
+      <div class="mx-auto w-full max-w-6xl px-4 md:px-8">
+        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+          <a href="index.html" class="rounded-xl bg-brand-soft px-2 py-2.5 font-semibold text-brand transition hover:bg-brand/15">Home</a>
+          <a href="quiz.html" class="rounded-xl bg-brand-soft px-2 py-2.5 font-semibold text-brand transition hover:bg-brand/15">Quiz</a>
+          <a href="list.html" class="rounded-xl bg-brand px-2 py-2.5 font-semibold text-white transition hover:bg-brand-deep">Alfabet</a>
+        </div>
+      </div>
+    </nav>
+  </div>
 </body>
 </html>
