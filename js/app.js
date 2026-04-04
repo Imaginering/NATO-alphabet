@@ -266,7 +266,7 @@ window.check = function(){
     inputStateIcon.classList.remove("text-emerald-600");
     inputStateIcon.textContent = "✕";
     feedback.className = "rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700";
-    feedback.innerHTML = `Onjuist. Juiste antwoord: <span class="font-bold">${currentAnswer}</span>`;
+    feedback.innerHTML = `Onjuist, het juiste antwoord is: <span class="font-bold">${currentAnswer}</span>`;
   }
 
   button.disabled = false;
